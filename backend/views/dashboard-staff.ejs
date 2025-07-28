@@ -1,0 +1,58 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <h2>My Assigned Deliveries</h2>
+  
+  <% if (deliveries.length > 0) { %>
+    <div class="dashboard">
+      <% deliveries.forEach(delivery => { %>
+        <div class="card">
+          <h3>Delivery to: <%= delivery.customerAddress %></h3>
+          
+          <p><strong>Items to Deliver:</strong></p>
+          <ul style="padding-left: 20px; margin-bottom: 20px;">
+            <% if (delivery.items && delivery.items.length > 0) { %>
+              <% delivery.items.forEach(item => { %>
+                <li>
+                  <%= item.quantity %>x
+                  <% if (item.itemId && item.itemId.name) { %>
+                    <%= item.itemId.name %> (<%= item.itemId.sku %>)
+                  <% } else { %>
+                    <span style="color: var(--color-danger);"><em>(Item Details Missing)</em></span>
+                  <% } %>
+                </li>
+              <% }) %>
+            <% } else { %>
+              <li>No items listed.</li>
+            <% } %>
+          </ul>
+          
+          <div style="margin-bottom: 20px;">
+            <strong>Current Status:</strong> 
+            <span class="status-pill <%= delivery.status.toLowerCase().replace(' ', '-') %>">
+              <%= delivery.status %>
+            </span>
+          </div>
+
+          <!-- The form now uses the new theme automatically -->
+          <form action="/deliveries/update-status/<%= delivery._id %>" method="POST">
+            <label for="status-<%= delivery._id %>">Update Status:</label>
+            <select name="status" id="status-<%= delivery._id %>" required>
+              <option value="In Transit" <%= delivery.status === 'In Transit' ? 'selected' : '' %>>In Transit</option>
+              <option value="Delivered" <%= delivery.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+              <option value="Failed" <%= delivery.status === 'Failed' ? 'selected' : '' %>>Failed</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Update</button>
+          </form>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="card" style="text-align: center;">
+      <p>You have no deliveries assigned to you at the moment.</p>
+    </div>
+  <% } %>
+</main>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,115 @@
+<%- include('partials/header') %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<%- include('partials/navbar') %>
+
+<div id="chart-data-provider" data-chart='<%- chartDataJSON %>' style="display: none;"></div>
+
+<main>
+  <h2>Admin Control Panel</h2>
+
+  <!-- Stat Cards -->
+  <div class="dashboard">
+    <div class="card"><h3>Total Users</h3><p style="font-size: 2em; text-align:center;"><%= stats.users %></p></div>
+    <div class="card"><h3>Warehouse Items</h3><p style="font-size: 2em; text-align:center;"><%= stats.items %></p></div>
+    <div class="card"><h3>Total Deliveries</h3><p style="font-size: 2em; text-align:center;"><%= stats.deliveries %></p></div>
+    <div class="card"><h3>Pending Deliveries</h3><p style="font-size: 2em; text-align:center;"><%= stats.pending %></p></div>
+  </div>
+
+  <!-- Chart Canvases -->
+  <div class="dashboard" style="margin-top: 40px; grid-template-columns: 2fr 1fr;">
+    <div class="card">
+      <h3>Today's Deliveries (By Hour)</h3>
+      <canvas id="deliveryChart"></canvas>
+      <div id="deliveryChartError" class="feedback-box info-box" style="display: none; margin-top: 20px;"></div>
+    </div>
+    <div class="card">
+      <h3>Stock Distribution</h3>
+      <div style="max-width: 320px; margin: auto;">
+        <canvas id="stockChart"></canvas>
+      </div>
+      <div id="stockChartError" class="feedback-box info-box" style="display: none; margin-top: 20px;"></div>
+    </div>
+  </div>
+
+  <!-- Admin Action Buttons -->
+  <div class="dashboard" style="margin-top: 40px;">
+    <div class="card">
+      <h3>System Management</h3>
+      <div class="card-actions">
+        <a href="/users/manage" class="btn btn-primary">Manage Users</a>
+        <a href="/inventory" class="btn btn-success">Manage Inventory</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Operations Hub</h3>
+      <div class="card-actions">
+        <a href="/manager-dashboard" class="btn btn-warning">Track Deliveries</a>
+        <a href="/delivery-reports" class="btn btn-info">Delivery Reports</a>
+        <a href="/view-messages" class="btn btn-secondary">View Contact Messages</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const dataProvider = document.getElementById('chart-data-provider');
+        if (!dataProvider) throw new Error("Data provider not found");
+        
+        const chartData = JSON.parse(dataProvider.dataset.chart);
+        if (!chartData) throw new Error("Chart data is null or undefined");
+
+        Chart.defaults.font.family = 'Inter';
+        Chart.defaults.color = '#333745';
+        
+        const deliveryCtx = document.getElementById('deliveryChart');
+        if (deliveryCtx && chartData.deliveryLabels) {
+            if (chartData.deliveryValues.some(v => v > 0)) {
+                new Chart(deliveryCtx, {
+                    type: 'bar',
+                    data: { labels: chartData.deliveryLabels, datasets: [{ label: '# of Deliveries', data: chartData.deliveryValues, backgroundColor: 'rgba(74, 105, 189, 0.7)', borderColor: 'rgba(74, 105, 189, 1)', borderWidth: 1, borderRadius: 4 }] },
+                    options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                });
+            } else {
+                deliveryCtx.style.display = 'none';
+                document.getElementById('deliveryChartError').style.display = 'block';
+                document.getElementById('deliveryChartError').innerText = 'No deliveries have been made today.';
+            }
+        }
+
+const stockCtx = document.getElementById('stockChart');
+if (stockCtx && chartData.stockLabels && chartData.stockLabels.length > 0) {
+    // --- NEW DYNAMIC COLOR LOGIC ---
+    const colorPalette = ['#4a69bd', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#34495e', '#1abc9c', '#3498db'];
+    const backgroundColors = chartData.stockLabels.map((_, i) => colorPalette[i % colorPalette.length]);
+
+    new Chart(stockCtx, {
+        type: 'doughnut',
+        data: {
+            labels: chartData.stockLabels,
+            datasets: [{
+                label: 'Total Quantity',
+                data: chartData.stockValues,
+                backgroundColor: backgroundColors, // Use the new dynamic colors
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+        }
+    });
+    // --- END OF NEW LOGIC ---
+} else if(stockCtx) {
+            stockCtx.parentElement.style.display = 'none';
+            document.getElementById('stockChartError').style.display = 'block';
+            document.getElementById('stockChartError').innerText = 'No stock data available.';
+        }
+    } catch (e) {
+        console.error("A critical error occurred while rendering the charts:", e);
+    }
+});
+</script>
+
+<%- include('partials/footer') %>

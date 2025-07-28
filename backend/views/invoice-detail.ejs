@@ -1,0 +1,77 @@
+<%- include('partials/header', { pageTitle: pageTitle }) %>
+<%- include('partials/navbar') %>
+
+<main>
+  <div class="invoice-box">
+    <div class="invoice-header">
+      <h2>Invoice</h2>
+      <p>Apex Logistics</p>
+    </div>
+
+    <div class="invoice-body">
+      <div class="invoice-details">
+        <div class="billed-to">
+          <h4>Billed To:</h4>
+          <p><%= invoice.deliveryId.assignedTo %></p>
+          <p><%= invoice.customerAddress %></p>
+        </div>
+        <div class="invoice-meta">
+          <h4>Invoice Details:</h4>
+          <p><strong>Invoice #:</strong> <%= invoice._id %></p>
+          <p><strong>Invoice Date:</strong> <%= new Date(invoice.invoiceDate).toLocaleDateString() %></p>
+        </div>
+      </div>
+
+      <div class="invoice-items">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th style="text-align:center;">Unit Price</th>
+              <th style="text-align:center;">Quantity</th>
+              <th style="text-align:right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (invoice.deliveryId && invoice.deliveryId.items) { %>
+              <% invoice.deliveryId.items.forEach(item => { %>
+                <tr>
+                  <td>
+                    <div class="item-name"><%= item.itemId.name %></div>
+                    <div class="item-sku">SKU: <%= item.itemId.sku %></div>
+                  </td>
+                  <td style="text-align:center;">$<%= item.itemId.price.toFixed(2) %></td>
+                  <td style="text-align:center;"><%= item.quantity %></td>
+                  <td style="text-align:right;">$<%= (item.itemId.price * item.quantity).toFixed(2) %></td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="invoice-totals">
+        <table>
+          <tr>
+            <td>Subtotal</td>
+            <td style="text-align:right;">$<%= invoice.totalAmount.toFixed(2) %></td>
+          </tr>
+          <tr>
+            <td class="total">Total</td>
+            <td class="total" style="text-align:right;">$<%= invoice.totalAmount.toFixed(2) %></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="invoice-footer">
+        <p>Thank you for your business!</p>
+      </div>
+    </div>
+    
+    <div class="invoice-actions">
+      <button onclick="window.print()" class="btn btn-primary">Print Invoice</button>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

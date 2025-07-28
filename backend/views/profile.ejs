@@ -1,0 +1,27 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <div style="max-width: 600px; margin: auto;">
+    <h2>My Profile</h2>
+    <div class="card">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <p><strong>Name:</strong> <%= user.name %></p>
+        <p><strong>Email:</strong> <%= user.email %></p>
+        <p><strong>Role:</strong> <%= user.role %></p>
+        <p><strong>Phone:</strong> <%= user.phone || 'Not provided' %></p>
+        <p><strong>Gender:</strong> <%= user.gender || 'Not provided' %></p>
+        <p><strong>Social Link:</strong> <%= user.socialLink ? `<a href="${user.socialLink}" target="_blank">${user.socialLink}</a>` : 'Not provided' %></p>
+      </div>
+      
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--color-border);">
+      
+      <div style="display: flex; gap: 15px;">
+        <a href="/users/profile/edit" class="btn btn-primary" style="flex: 1;">Edit Profile</a>
+        <a href="/users/profile/change-password" class="btn btn-secondary" style="flex: 1;">Change Password</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

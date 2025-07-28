@@ -1,0 +1,78 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>#map { height: 450px; border-radius: 12px; margin-top: 20px; z-index: 1; }</style>
+<%- include('partials/navbar') %>
+
+<div id="route-data-provider" data-route='<%- routeJSON %>' style="display: none;"></div>
+
+<main>
+  <h2>AI-Optimized Delivery Route</h2>
+  <div class="dashboard">
+    <div class="card" style="flex: 1;">
+      <h3>Delivery Details</h3>
+      <p><strong>Destination:</strong> <%= delivery.customerAddress %></p>
+      <p><strong>Assigned To:</strong> <%= delivery.assignedTo %></p>
+      <p><strong>Items:</strong></p>
+      <ul>
+        <% delivery.items.forEach(item => { %>
+          <li>
+            <%= item.quantity %>x 
+            <% if (item.itemId) { %>
+              <%= item.itemId.name %> (<%= item.itemId.sku %>)
+            <% } else { %>
+              <span style="color: #e53e3e; font-style: italic;">(Item has been deleted)</span>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+    <div class="card" style="flex: 2;">
+      <h3>Optimal Stop Order</h3>
+      <div id="map"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const dataProvider = document.getElementById('route-data-provider');
+        if (!dataProvider) { return console.error("Data provider div not found."); }
+
+        const routeDataString = dataProvider.dataset.route;
+        if (!routeDataString) { return console.error("No route data found in data attribute."); }
+
+        const routeData = JSON.parse(routeDataString);
+        
+        if (!routeData || routeData.length === 0 || !routeData[0].coords) {
+            document.getElementById('map').innerHTML = '<p class="error-box">Could not render map: Invalid route data received from AI service.</p>';
+            return console.error("Parsed route data is empty or invalid.", routeData);
+        }
+
+        const map = L.map('map').setView(routeData[0].coords, 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        const latLngs = [];
+        routeData.forEach((stop, index) => {
+            if (stop.coords) {
+                latLngs.push(stop.coords);
+                L.marker(stop.coords).addTo(map)
+                    .bindPopup(`<b>Stop ${index + 1}:</b><br>${stop.address}`);
+            }
+        });
+
+        if (latLngs.length > 0) {
+            const polyline = L.polyline(latLngs, {color: '#4299e1', weight: 5}).addTo(map);
+            map.fitBounds(polyline.getBounds().pad(0.1));
+        }
+    } catch (e) {
+        console.error("A critical error occurred while rendering the map:", e);
+        document.getElementById('map').innerHTML = '<p class="error-box">A JavaScript error prevented the map from loading. Please check the console.</p>';
+    }
+});
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,91 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+<main>
+  <h2>Warehouse Inventory</h2>
+  <p style="text-align:center;">Search, manage, and track all unique items in the warehouse with AI-powered forecasting.</p>
+
+  <div class="actions-container" style="justify-content: space-between;">
+    <form action="/inventory" method="GET" style="display: flex; flex-grow: 1; margin: 0; padding: 0; box-shadow: none; background: none; border: none; max-width: 500px;">
+      <input type="text" name="search" placeholder="Search by Stock Name or SKU..." value="<%= searchQuery %>" style="flex-grow: 1; margin: 0; border-radius: var(--border-radius) 0 0 var(--border-radius);"/>
+      <button type="submit" class="btn btn-primary" style="margin: 0; border-radius: 0 var(--border-radius) var(--border-radius) 0; box-shadow: none;">Search</button>
+    </form>
+    <a href="/inventory/add" class="btn btn-primary">+ Add/Restock Item</a>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Stock Name</th>
+          <th>SKU</th>
+          <th>Total Stock</th>
+          <th>Available Stock</th>
+          <th>Price</th>
+          <!-- Re-added AI Columns -->
+          <th title="Predicted sales per day based on the last 30 days of delivery data.">
+            AI: Daily Burn <span style="color: var(--color-info);">ⓘ</span>
+          </th>
+          <th title="Estimated days until this item runs out of stock based on the daily burn rate.">
+            AI: Stock Left <span style="color: var(--color-info);">ⓘ</span>
+          </th>
+          <th>Location</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (items.length > 0) { %>
+          <% items.forEach(item => { %>
+            <% 
+              // Enhanced highlighting logic that prioritizes the AI forecast
+              let rowClass = '';
+              if (item.forecast && typeof item.forecast.daysOfStockLeft === 'number' && item.forecast.daysOfStockLeft <= 7) {
+                rowClass = 'critical-stock'; // Most important warning
+              } else if (item.availableStock < 10 && item.availableStock > 0) {
+                rowClass = 'low-stock'; // Secondary warning
+              }
+            %>
+            <tr class="<%= rowClass %>">
+              <td><%= item.name %></td>
+              <td><%= item.sku %></td>
+              <td><%= item.totalStock || 0 %></td>
+              <td><%= item.availableStock || 0 %></td>
+              <td>$<%= (item.price || 0).toFixed(2) %></td>
+              
+              <!-- AI Daily Burn Column with safety check -->
+              <td>
+                <% if (item.forecast && typeof item.forecast.dailyBurnRate === 'number') { %>
+                  <%= item.forecast.dailyBurnRate %>/day
+                <% } else { %>
+                  N/A
+                <% } %>
+              </td>
+
+              <!-- AI Stock Left Column with safety and infinity check -->
+              <td>
+                <% if (item.forecast && typeof item.forecast.daysOfStockLeft === 'number') { %>
+                  <% if (item.forecast.daysOfStockLeft > 365) { %>
+                    ∞ <!-- Infinity symbol for items with no sales -->
+                  <% } else { %>
+                    <%= item.forecast.daysOfStockLeft %> days
+                  <% } %>
+                <% } else { %>
+                  N/A
+                <% } %>
+              </td>
+              
+              <td><%= item.location || 'N/A' %></td>
+              <td>
+                <a href="/inventory/edit/<%= item._id %>" class="action-link">Edit</a>
+                <a href="/inventory/delete/<%= item._id %>" class="action-link delete-link" onclick="return confirm('Are you sure? This action cannot be undone.');">Delete</a>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <!-- Updated colspan to account for the 9 columns -->
+          <tr><td colspan="9" style="text-align: center;">No items found.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</main>
+<%- include('partials/footer') %>

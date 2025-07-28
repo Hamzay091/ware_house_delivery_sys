@@ -1,0 +1,150 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<!-- This hidden div provides all item data to our script -->
+<div id="item-data-provider" data-items='<%- itemsJSON %>' style="display: none;"></div>
+
+<main>
+  <form id="delivery-form" action="/deliveries/assign" method="POST">
+    <h2>Assign New Delivery Order</h2>
+    
+    <% if (error) { %>
+      <div class="feedback-box error-box"><%= error %></div>
+    <% } %>
+    
+    <% if (items.length === 0) { %>
+      <div class="feedback-box warning-box">
+        <p style="margin: 0;"><strong>Warning:</strong> There are no items currently in stock. <br>Please <a href="/inventory/add" style="font-weight: bold;">add an item to the inventory</a>.</p>
+      </div>
+    <% } else { %>
+      <label for="customerAddress">Customer Address</label>
+      <textarea name="customerAddress" id="customerAddress" rows="3" placeholder="e.g., 123 Main St, Anytown, USA" required></textarea>
+      
+      <label for="assignedTo">Assign To Staff</label>
+      <select name="assignedTo" id="assignedTo" required>
+        <option value="">-- Select Staff --</option>
+        <% staff.forEach(person => { %>
+          <% const isRecommended = person._id.toString() === recommendedStaffId; %>
+          <option value="<%= person.name %>" <%= isRecommended ? 'selected' : '' %>>
+            <%= person.name %> (Current Deliveries: <%= person.workload %>) <%= isRecommended ? '✨ Recommended' : '' %>
+          </option>
+        <% }) %>
+      </select>
+      
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid var(--color-border);">
+      
+      <h3>Items to Include</h3>
+      <div id="items-container">
+        <!-- Template for a single item row -->
+        <div class="item-row">
+          <select name="items[0][itemId]" class="item-select" required>
+            <option value="">-- Select an Item --</option>
+            <% items.forEach(item => { %>
+              <option value="<%= item._id %>"><%= item.name %> (<%= item.sku %>)</option>
+            <% }) %>
+          </select>
+          <input type="number" name="items[0][quantity]" class="quantity-input" placeholder="Qty" min="1" required />
+          <span class="stock-info"></span> <!-- This will show available stock -->
+        </div>
+      </div>
+      
+      <button type="button" id="add-item-btn" class="btn btn-success">+ Add Another Item</button>
+      
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--color-border);">
+      
+      <button type="submit" id="submit-btn" class="btn btn-primary">Create Delivery Order</button>
+    <% } %>
+  </form>
+</main>
+
+<!-- New, more powerful script for validation -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dataProvider = document.getElementById('item-data-provider');
+    if (!dataProvider) return;
+
+    // Parse the item data from the hidden div
+    const itemsData = JSON.parse(dataProvider.dataset.items);
+    const itemsMap = new Map(itemsData.map(item => [item._id, item]));
+
+    const form = document.getElementById('delivery-form');
+    const itemsContainer = document.getElementById('items-container');
+    const submitBtn = document.getElementById('submit-btn');
+    const addItemBtn = document.getElementById('add-item-btn');
+    let itemIndex = 1;
+
+    // Function to check stock for a single row
+    const checkStock = (row) => {
+        const itemSelect = row.querySelector('.item-select');
+        const quantityInput = row.querySelector('.quantity-input');
+        const stockInfo = row.querySelector('.stock-info');
+        
+        const selectedItem = itemsMap.get(itemSelect.value);
+        const requestedQty = Number(quantityInput.value);
+
+        if (selectedItem) {
+            stockInfo.textContent = `(Available: ${selectedItem.availableStock})`;
+            if (requestedQty > selectedItem.availableStock) {
+                stockInfo.style.color = 'var(--color-danger)';
+                quantityInput.style.borderColor = 'var(--color-danger)';
+                return false; // Invalid quantity
+            } else {
+                stockInfo.style.color = 'var(--color-success)';
+                quantityInput.style.borderColor = 'var(--color-border)';
+            }
+        } else {
+            stockInfo.textContent = '';
+        }
+        return true; // Valid
+    };
+
+    // Function to validate all rows and enable/disable submit button
+    const validateAllRows = () => {
+        let allValid = true;
+        const rows = itemsContainer.querySelectorAll('.item-row');
+        rows.forEach(row => {
+            if (!checkStock(row)) {
+                allValid = false;
+            }
+        });
+        submitBtn.disabled = !allValid;
+        submitBtn.style.opacity = allValid ? '1' : '0.6';
+    };
+
+    // Add event listeners to the container for any input changes
+    itemsContainer.addEventListener('change', validateAllRows);
+    itemsContainer.addEventListener('keyup', validateAllRows);
+    itemsContainer.addEventListener('paste', validateAllRows);
+
+    // Logic for the "Add Another Item" button
+    if (addItemBtn) {
+        const templateRow = itemsContainer.querySelector('.item-row').cloneNode(true);
+        // Clear inputs on the template
+        templateRow.querySelector('select').value = '';
+        templateRow.querySelector('input').value = '';
+
+        addItemBtn.addEventListener('click', () => {
+            const newRow = templateRow.cloneNode(true);
+            newRow.querySelector('select').name = `items[${itemIndex}][itemId]`;
+            newRow.querySelector('input').name = `items[${itemIndex}][quantity]`;
+            itemsContainer.appendChild(newRow);
+            itemIndex++;
+            validateAllRows();
+        });
+    }
+
+    // Add some styling for the new row layout
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .item-row { display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .item-row input, .item-row select { margin-bottom: 0 !important; }
+        .stock-info { font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
+    `;
+    document.head.appendChild(style);
+
+    // Initial validation check
+    validateAllRows();
+});
+</script>
+
+<%- include('partials/footer') %>

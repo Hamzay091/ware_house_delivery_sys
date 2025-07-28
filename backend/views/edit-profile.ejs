@@ -1,0 +1,27 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <form action="/users/profile/edit" method="POST">
+    <h2>Edit Your Profile</h2>
+
+    <% if (error) { %><div class="feedback-box error-box"><%= error %></div><% } %>
+    <% if (success) { %><div class="feedback-box success-box"><%= success %></div><% } %>
+    
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" value="<%= user.name %>" required />
+    
+    <label for="email">Email (cannot be changed)</label>
+    <input type="email" id="email" name="email" value="<%= user.email %>" disabled />
+    
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone" name="phone" value="<%= user.phone || '' %>" />
+    
+    <label for="socialLink">Social Media Profile Link</label>
+    <input type="url" id="socialLink" name="socialLink" value="<%= user.socialLink || '' %>" />
+    
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+  </form>
+</main>
+
+<%- include('partials/footer') %>

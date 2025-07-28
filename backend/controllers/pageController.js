@@ -1,0 +1,41 @@
+const Item = require('../models/item');
+const Contact = require('../models/contact');
+
+// This function now renders our new, big landing page
+exports.renderHomePage = (req, res) => {
+  // Pass an empty message variable so the page doesn't error on first load
+  res.render('index', { message: null });
+};
+
+// This function now renders 'index' instead of 'contact' after submission
+exports.handleContactForm = async (req, res) => {
+  try {
+    await Contact.create(req.body);
+    // On success, re-render the index page with a success message
+    res.render('index', { message: 'Thank you for your message! We will get back to you soon.' });
+  } catch (error) {
+    console.error('Contact form submission error:', error);
+    // On error, re-render the index page with an error message
+    res.render('index', { message: 'Sorry, there was an error sending your message.' });
+  }
+};
+
+// These functions remain the same
+exports.renderProfilePage = (req, res) => res.render('profile');
+
+exports.renderStockCataloguePage = async (req, res) => {
+  try {
+    const items = await Item.find().populate('stockId');
+    items.sort((a, b) => {
+      const nameA = a.stockId ? a.stockId.name.toLowerCase() : '';
+      const nameB = b.stockId ? b.stockId.name.toLowerCase() : '';
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return 0;
+    });
+    res.render('stock-catalogue', { items });
+  } catch (error) {
+    console.error("Error fetching stock catalogue:", error);
+    res.status(500).send("Error loading stock page.");
+  }
+};

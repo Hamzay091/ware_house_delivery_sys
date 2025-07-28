@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <form action="/contact" method="POST">
+    <h2>Contact Us</h2>
+    <p style="text-align: center; margin-top: -20px; margin-bottom: 25px;">Have a question or want to request a demo? Fill out the form below.</p>
+    
+    <% if (message) { %>
+      <div class="feedback-box success-box"><%= message %></div>
+    <% } %>
+    
+    <label for="name">Your Name</label>
+    <input type="text" id="name" name="name" placeholder="e.g., Jane Smith" required />
+    
+    <label for="email">Your Email</label>
+    <input type="email" id="email" name="email" placeholder="you@example.com" required />
+    
+    <label for="message">Your Message</label>
+    <textarea id="message" name="message" rows="5" placeholder="Let us know how we can help..." required></textarea>
+    
+    <button type="submit" class="btn btn-primary">Send Message</button>
+  </form>
+</main>
+
+<%- include('partials/footer') %>

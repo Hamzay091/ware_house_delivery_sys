@@ -1,0 +1,49 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+<main>
+  <h2>Billing & Invoices</h2>
+  <p style="text-align:center;">Track the financial status of all completed deliveries.</p>
+  
+  <% if (locals.error) { %><div class="feedback-box error-box"><%= locals.error %></div><% } %>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Invoice Date</th>
+          <th>Customer Address</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (invoices.length > 0) { %>
+          <% invoices.forEach(invoice => { %>
+            <tr>
+              <td><%= new Date(invoice.invoiceDate).toLocaleDateString() %></td>
+              <td><%= invoice.customerAddress %></td>
+              <td>$<%= invoice.totalAmount.toFixed(2) %></td>
+              <td><span class="status-pill <%= invoice.status.toLowerCase() %>"><%= invoice.status %></span></td>
+              <td style="display: flex; gap: 10px;">
+                <!-- ADD THE VIEW BUTTON HERE -->
+                <a href="/billing/invoice/<%= invoice._id %>" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">View</a>
+                <% if (invoice.status === 'Unpaid') { %>
+                  <form action="/billing/update-status/<%= invoice._id %>" method="POST" style="margin: 0; padding: 0; background: none; border: none; box-shadow: none;">
+                    <input type="hidden" name="status" value="Paid">
+                    <button type="submit" class="btn btn-success" style="padding: 5px 10px; font-size: 0.8rem; box-shadow: none;">Mark Paid</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="5" style="text-align:center;">No invoices have been generated yet.</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</main>
+<%- include('partials/footer') %>

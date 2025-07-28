@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <form action="/users/edit/<%= userToEdit._id %>" method="POST">
+    <h2>Edit User: <%= userToEdit.name %></h2>
+    
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" value="<%= userToEdit.name %>" required />
+    
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="<%= userToEdit.email %>" required />
+    
+    <label for="phone">Phone</label>
+    <input type="text" id="phone" name="phone" value="<%= userToEdit.phone || '' %>" />
+    
+    <label for="role">Role</label>
+    <select id="role" name="role" required>
+      <option value="Admin" <%= userToEdit.role === 'Admin' ? 'selected' : '' %>>Admin</option>
+      <option value="Manager" <%= userToEdit.role === 'Manager' ? 'selected' : '' %>>Manager</option>
+      <option value="DeliveryStaff" <%= userToEdit.role === 'DeliveryStaff' ? 'selected' : '' %>>Delivery Staff</option>
+    </select>
+    
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+  </form>
+</main>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,57 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <h2>Delivery Reports</h2>
+  <p>A comprehensive log of all deliveries in the system.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date Created</th>
+        <th>Destination</th>
+        <th>Assigned To</th>
+        <th>Items</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (deliveries.length > 0) { %>
+        <% deliveries.forEach(delivery => { %>
+          <tr>
+            <td><%= new Date(delivery.createdAt).toLocaleString() %></td>
+            <td><%= delivery.customerAddress %></td>
+            <td><%= delivery.assignedTo %></td>
+            <td>
+              <ul>
+                <% if (delivery.items && delivery.items.length > 0) { %>
+                  <% delivery.items.forEach(item => { %>
+                    <li>
+                      <%= item.quantity %>x
+                      <% if (item.itemId) { %>
+                        <%= item.itemId.name %> (<%= item.itemId.sku %>)
+                      <% } else { %>
+                        <span style="color: #e53e3e; font-style: italic;">(Item Deleted)</span>
+                      <% } %>
+                    </li>
+                  <% }) %>
+                <% } else { %>
+                  <li>No items listed.</li>
+                <% } %>
+              </ul>
+            </td>
+            <td class="status-<%= delivery.status.replace(' ', '-') %>">
+              <%= delivery.status %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="5">No deliveries have been created yet.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</main>
+
+<%- include('partials/footer') %>

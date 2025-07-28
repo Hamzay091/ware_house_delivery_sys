@@ -1,0 +1,24 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+<main>
+  <h2>Contact Form Submissions</h2>
+  <table>
+    <thead><tr><th>Date</th><th>From</th><th>Email</th><th>Message</th><th>Status</th></tr></thead>
+    <tbody>
+      <% if (messages.length > 0) { %>
+        <% messages.forEach(msg => { %>
+          <tr class="message-<%= msg.status.toLowerCase() %>">
+            <td><%= new Date(msg.createdAt).toLocaleString() %></td>
+            <td><%= msg.name %></td>
+            <td><a href="mailto:<%= msg.email %>"><%= msg.email %></a></td>
+            <td><%= msg.message %></td>
+            <td><%= msg.status %></td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr><td colspan="5">There are no messages.</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</main>
+<%- include('partials/footer') %>

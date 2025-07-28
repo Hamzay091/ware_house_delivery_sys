@@ -1,0 +1,91 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<!-- The main tag now holds our entire single-page experience -->
+<main style="padding: 0; max-width: 100%;">
+
+  <!-- Section 1: The New, High-Impact Hero Section -->
+  <header class="hero-section-enhanced">
+    <div class="fade-in-element is-visible"> <!-- Animate this content on load -->
+      <h1>Revolutionize Your Logistics</h1>
+      <p>Apex Logistics combines intelligent warehouse management with AI-powered delivery optimization to create a seamless, efficient, and transparent supply chain from storage to doorstep.</p>
+      <a href="/#contact-section" class="btn btn-primary hero-cta">Get a Free Demo</a>
+    </div>
+  </header>
+
+  <!-- We wrap the rest of the content in a container for proper padding -->
+  <div style="max-width: 1400px; margin: 0 auto; padding: 32px;">
+
+    <!-- Section 2: Core Features with Icons -->
+    <section id="about-section" class="landing-section fade-in-element">
+      <h2>Why Choose Apex Logistics?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📦</div>
+          <h3>Intelligent Storage</h3>
+          <p>Our AI optimizes warehouse slotting, reducing travel time for staff and maximizing your storage capacity.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🚚</div>
+          <h3>Dynamic Routing</h3>
+          <p>Real-time traffic and order analysis ensure the fastest, most fuel-efficient delivery routes for your fleet.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Predictive Analytics</h3>
+          <p>Leverage AI forecasting to predict stock depletion rates, prevent stockouts, and make smarter reordering decisions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Contact Form -->
+    <section id="contact-section" class="landing-section fade-in-element">
+      <form action="/" method="POST">
+        <h2>Ready to Upgrade Your Operations?</h2>
+        <p style="text-align: center; margin-top: -20px; margin-bottom: 25px;">Fill out the form below to get in touch with our team for a personalized demo.</p>
+        
+        <% if (message && message.includes('Thank you')) { %>
+          <div class="feedback-box success-box"><%= message %></div>
+        <% } else if (message) { %>
+          <div class="feedback-box error-box"><%= message %></div>
+        <% } %>
+        
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" placeholder="e.g., Jane Smith" required />
+        
+        <label for="email">Your Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required />
+        
+        <label for="message">Your Message</label>
+        <textarea id="message" name="message" rows="5" placeholder="Let us know how we can help..." required></textarea>
+        
+        <button type="submit" class="btn btn-primary">Send Message</button>
+      </form>
+    </section>
+
+  </div>
+</main>
+
+<%- include('partials/footer') %>
+
+<!-- Step 3: JavaScript for Scroll Animations -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          // Optional: Stop observing after it has become visible
+          // observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      rootMargin: '0px',
+      threshold: 0.1 // Trigger when 10% of the element is visible
+    });
+
+    // Find all elements to animate and start observing them
+    const fadeInElements = document.querySelectorAll('.fade-in-element');
+    fadeInElements.forEach(el => observer.observe(el));
+  });
+</script>

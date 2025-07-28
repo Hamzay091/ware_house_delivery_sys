@@ -1,0 +1,65 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <h2>Manager: Delivery Tracking Hub</h2>
+
+  <% if (locals.error) { %>
+    <div class="feedback-box error-box"><%= locals.error %></div>
+  <% } %>
+
+  <div class="actions-container">
+    <a href="/inventory" class="btn btn-secondary">Manage Inventory</a>
+    <a href="/deliveries/assign" class="btn btn-primary">+ Assign New Delivery</a>
+    <a href="/delivery-reports" class="btn btn-secondary">Delivery Reports</a>
+    <a href="/view-messages" class="btn btn-secondary">View Contact Messages</a>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Destination</th>
+          <th>Items</th>
+          <th>Assigned To</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% deliveries.forEach(delivery => { %>
+          <tr>
+            <td><%= delivery.customerAddress %></td>
+            <td>
+              <ul style="padding-left: 15px; margin: 0;">
+                <% if (delivery.items && delivery.items.length > 0) { %>
+                  <% delivery.items.forEach(item => { %>
+                    <li>
+                      <%= item.quantity %>x
+                      <% if (item.itemId) { %>
+                        <%= item.itemId.name %> (<%= item.itemId.sku %>)
+                      <% } else { %>
+                        <span style="color: var(--color-danger);"><em>(Item Deleted)</em></span>
+                      <% } %>
+                    </li>
+                  <% }) %>
+                <% } else { %><li>No items listed.</li><% } %>
+              </ul>
+            </td>
+            <td><%= delivery.assignedTo %></td>
+            <td><span class="status-pill <%= delivery.status.toLowerCase().replace(' ', '-') %>"><%= delivery.status %></span></td>
+            <td>
+              <% if (delivery.status === 'Pending') { %>
+                <a href="/ai/optimize-delivery-route/<%= delivery._id %>" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">✨ Optimize Route</a>
+              <% } else if (delivery.status === 'Delivered') { %>
+                <a href="/billing/generate/<%= delivery._id %>" class="btn btn-success" style="padding: 5px 10px; font-size: 0.8rem;">Generate Invoice</a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

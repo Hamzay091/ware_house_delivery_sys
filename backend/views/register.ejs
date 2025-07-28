@@ -1,0 +1,50 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <form action="/register" method="POST">
+    <h2>Create Your Account</h2>
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+  <div class="feedback-box error-box">
+    <ul style="list-style-type: none; padding: 0; margin: 0;">
+      <% errors.forEach(function(error) { %>
+        <li><%= error.msg %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" placeholder="e.g., John Doe" required />
+    
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" placeholder="you@example.com" required />
+    
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" placeholder="Choose a strong password" required />
+    
+    <label for="phone">Phone Number</label>
+    <input type="text" id="phone" name="phone" placeholder="(Optional)" />
+    
+    <label for="socialLink">Social Media Profile Link</label>
+    <input type="text" id="socialLink" name="socialLink" placeholder="(Optional)" />
+    
+    <label for="gender">Gender</label>
+    <select id="gender" name="gender" required>
+      <option value="">-- Select Gender --</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
+    
+    <label for="role">Role</label>
+    <select id="role" name="role" required>
+      <option value="">-- Select Role --</option>
+      <option value="Admin">Admin</option>
+      <option value="Manager">Manager</option>
+      <option value="DeliveryStaff">Delivery Staff</option>
+    </select>
+    
+    <button type="submit" class="btn btn-primary">Register</button>
+  </form>
+</main>
+
+<%- include('partials/footer') %>

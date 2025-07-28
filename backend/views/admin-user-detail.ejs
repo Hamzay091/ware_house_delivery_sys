@@ -1,0 +1,50 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <h2>Details for <%= user.name %> (<%= user.role %>)</h2>
+
+  <!-- User Profile Card -->
+  <div class="card" style="max-width: 700px; margin: 0 auto 30px auto;">
+    <p><strong>Name:</strong> <%= user.name %></p>
+    <p><strong>Email:</strong> <%= user.email %></p>
+    <p><strong>Phone:</strong> <%= user.phone || 'Not provided' %></p>
+  </div>
+
+  <% if (deliveries.length > 0) { %>
+    <h3>Assigned Deliveries</h3>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Destination</th>
+            <th>Items</th>
+            <th>Status</th>
+            <th>Assigned On</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% deliveries.forEach(delivery => { %>
+            <tr>
+              <td><%= delivery.customerAddress %></td>
+              <td>
+                <ul style="padding-left: 15px; margin: 0;">
+                  <% delivery.items.forEach(item => { %>
+                    <li><%= item.quantity %>x <%= item.itemId.name %></li>
+                  <% }) %>
+                </ul>
+              </td>
+              <td><span class="status-pill <%= delivery.status.toLowerCase().replace(' ', '-') %>"><%= delivery.status %></span></td>
+              <td><%= new Date(delivery.createdAt).toLocaleDateString() %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="feedback-box info-box" style="max-width: 700px;">
+      This user has no assigned deliveries.
+    </div>
+  <% } %>
+</main>
+<%- include('partials/footer') %>

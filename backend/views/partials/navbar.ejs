@@ -1,0 +1,69 @@
+<nav>
+  <!-- The main navigation links -->
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/#about-section">About</a></li>
+    <li><a href="/#contact-section">Contact</a></li>
+    <% if (user) { %>
+      <li><a href="/stock">Stock Catalogue</a></li>
+      <% if (user.role === 'Admin' || user.role === 'Manager') { %>
+        <li><a href="/inventory">Inventory</a></li>
+        <li><a href="/billing/invoices">Billing</a></li>
+      <% } %>
+      <% if (user.role === 'Admin') { %>
+        <li><a href="/admin-dashboard">Admin Dashboard</a></li>
+      <% } else if (user.role === 'Manager') { %>
+        <li><a href="/manager-dashboard">Manager Dashboard</a></li>
+      <% } else if (user.role === 'DeliveryStaff') { %>
+        <li><a href="/delivery-staff-dashboard">My Deliveries</a></li>
+      <% } %>
+      <li><a href="/profile">My Profile</a></li>
+      <li><a href="/logout">Logout</a></li>
+    <% } else { %>
+      <li><a href="/login">Login</a></li>
+      <li><a href="/register">Register</a></li>
+    <% } %>
+  </ul>
+
+  <!-- Admin Control Menu Icon (The trigger for the sidebar) -->
+  <% if (user && user.role === 'Admin') { %>
+    <button id="admin-menu-toggle" class="admin-menu-icon" aria-label="Open Admin Menu">☰</button>
+  <% } %>
+</nav>
+
+<!-- This part is rendered only for the admin, outside the nav flow -->
+<% if (user && user.role === 'Admin') { %>
+  <!-- The semi-transparent background overlay -->
+  <div id="sidebar-overlay"></div>
+  
+  <!-- The actual sidebar that slides in -->
+  <aside id="admin-sidebar">
+    <div class="sidebar-header">
+      <h3>Admin Controls</h3>
+      <button id="sidebar-close-btn" aria-label="Close Admin Menu">×</button>
+    </div>
+    <div class="sidebar-links">
+      <a href="/admin/view-as/manager">View Manager Dashboard</a>
+      <a href="/admin/managers">Manage Managers</a>
+      <a href="/admin/delivery-staff">Manage Delivery Staff</a>
+    </div>
+  </aside>
+<% } %>
+
+<!-- JavaScript to control the sidebar -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggleButton = document.getElementById('admin-menu-toggle');
+    const closeButton = document.getElementById('sidebar-close-btn');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (toggleButton) {
+      const openSidebar = () => document.body.classList.add('sidebar-open');
+      const closeSidebar = () => document.body.classList.remove('sidebar-open');
+
+      toggleButton.addEventListener('click', openSidebar);
+      closeButton.addEventListener('click', closeSidebar);
+      overlay.addEventListener('click', closeSidebar);
+    }
+  });
+</script>

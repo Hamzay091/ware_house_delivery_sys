@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+<main>
+  <h2><%= title %></h2>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(user => { %>
+          <tr>
+            <td><%= user.name %></td>
+            <td><%= user.email %></td>
+            <td><%= user.phone || 'N/A' %></td>
+            <td>
+              <a href="/admin/user-detail/<%= user._id %>" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">View Details</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</main>
+<%- include('partials/footer') %>
