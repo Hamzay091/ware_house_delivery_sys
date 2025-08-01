@@ -1,6 +1,6 @@
 # AI Smart Warehouse & Delivery Management System
 
-![Apex Logistics Management System](https://via.placeholder.com/1200x600/4a69bd/ffffff?text=Apex+Logistics+System)
+![Apex Logistics Management System](https://via.placeholder.com/1200x600/5f3b1e/ffffff?text=Apex+Logistics+System)
 
 An advanced, full-stack web application designed to bring intelligence and efficiency to warehouse operations and delivery logistics. This project combines a robust backend for managing inventory, users, and deliveries with a suite of AI-powered services for route optimization, smart staff assignment, and predictive sales forecasting.
 
@@ -16,7 +16,7 @@ This application is built with a clear, role-based architecture, providing disti
 - **Delivery Staff:** Can view their assigned deliveries and update the status in real-time (`Pending`, `In Transit`, `Delivered`, `Failed`).
 
 ### 🧠 AI & Smart Features
-- **Route Optimization:** Utilizes the PositionStack API for high-accuracy geocoding to find precise coordinates for delivery destinations and calculates an efficient travel order.
+- **Route Optimization:** Utilizes the PositionStack API for high-accuracy geocoding to find precise coordinates for delivery destinations and calculates an efficient travel order using a greedy algorithm.
 - **Smart Staff Assignment:** Automatically recommends the delivery staff member with the lightest current workload when assigning a new delivery, ensuring balanced and efficient operations.
 - **Predictive Inventory Forecasting:** A Python-based script analyzes the 30-day sales history of successfully delivered items to calculate:
   - **AI: Daily Burn:** The average number of units sold per day.
@@ -40,10 +40,14 @@ This application is built with a clear, role-based architecture, providing disti
 - **Dashboard Impersonation:** Admins can view the full Manager Dashboard to see the application from a manager's perspective.
 
 ### 🛡️ Security Features
+- **Unified Authentication with Passport.js:** Manages all user authentication, providing a single, secure system for session management.
+- **Multiple Login Strategies:**
+  - **Local Strategy:** Securely handles traditional email and password logins.
+  - **OAuth 2.0 Strategy:** Allows users to securely log in or register with their Google account.
 - **Secure Password Hashing:** Uses `bcrypt.js` to securely hash and salt all user passwords before storing them in the database.
-- **Server-Side Session Management:** Employs `express-session` to maintain user login state securely. Session data is stored on the server, and a secure, HTTP-only cookie is sent to the client.
-- **Input Validation & Sanitization:** Uses `express-validator` to validate and sanitize all user inputs (e.g., on registration and login) to prevent common vulnerabilities like XSS attacks and ensure data integrity.
-- **Route Protection (Authorization):** A robust middleware system (`authMiddleware.js`) protects all sensitive routes, ensuring they are only accessible to authenticated users with the correct role (e.g., Admin-only, Manager-only).
+- **Role Selection for New OAuth Users:** First-time users signing in via Google are prompted to select their role, preventing unauthorized access and ensuring a smooth onboarding flow.
+- **Input Validation & Sanitization:** Uses `express-validator` to validate and sanitize all user inputs (e.g., on registration) to prevent common vulnerabilities like XSS attacks.
+- **Route Protection (Authorization):** A robust middleware system (`authMiddleware.js`) protects all sensitive routes, ensuring they are only accessible to authenticated users with the correct role.
 - **Environment Variables:** All sensitive information (database URIs, secret keys, API keys) is stored securely in `.env` files and is not hard-coded.
 
 ---
@@ -54,15 +58,17 @@ This application is built with a clear, role-based architecture, providing disti
 - **Node.js & Express.js:** For the core application server.
 - **MongoDB:** NoSQL database for storing all application data.
 - **Mongoose:** Object Data Modeling (ODM) library for MongoDB.
-- **Express Session & bcrypt.js:** For authentication and security.
+- **Passport.js (`passport`, `passport-local`, `passport-google-oauth20`):** For robust, unified authentication handling both traditional and OAuth 2.0 strategies.
+- **bcrypt.js:** For secure password hashing.
 - **Express Validator:** For input validation and sanitization.
 
 #### **Frontend**
 - **EJS (Embedded JavaScript templates):** For server-side rendering of dynamic HTML.
-- **CSS3:** A custom-built modern theme with variables, a responsive layout, and animations.
+- **CSS3:** A custom-built modern theme with variables, a professional color palette, glass morphism effects, and a fully responsive layout.
 - **JavaScript (Client-Side):** For interactive components like the admin sidebar, dynamic forms, and chart rendering.
 - **Chart.js:** For data visualization on the Admin dashboard.
 - **Leaflet.js:** For displaying the interactive map on the route optimization page.
+- **Font Awesome:** For a clean and modern icon set.
 
 #### **AI Services (Python Microservice)**
 - **Python & Flask:** A lightweight web server to expose AI features as an API.
@@ -70,6 +76,7 @@ This application is built with a clear, role-based architecture, providing disti
 - **Requests & Scipy:** For external API communication and calculations.
 
 #### **External APIs**
+- **Google OAuth 2.0:** For secure user authentication.
 - **PositionStack API:** For converting street addresses into geographic coordinates.
 
 ---
@@ -80,6 +87,16 @@ To run this project locally, you will need Node.js, npm, Python, pip, and a runn
 
 ### 1. Backend Server (Node.js)
 
+**Note on Google OAuth:** To enable the "Login with Google" feature, you must obtain credentials from the Google Cloud Console.
+1.  Create a project in the [Google Cloud Console](https://console.cloud.google.com/).
+2.  In the API Library, enable the **"Google People API"**.
+3.  Configure the **"OAuth consent screen"** with your application details.
+4.  Go to "Credentials" and create an **"OAuth 2.0 Client ID"**, selecting "Web application".
+5.  Add `http://localhost:3000` as an **"Authorized JavaScript origin"**.
+6.  Add `http://localhost:3000/auth/google/callback` as an **"Authorized redirect URI"**.
+7.  Copy the generated **Client ID** and **Client Secret**.
+
+Now, set up the backend:
 ```bash
 # 1. Navigate to the backend directory
 cd backend
@@ -91,10 +108,11 @@ npm install
 PORT=3000
 MONGO_URI=mongodb://127.0.0.1:27017/warehouseDB
 SECRET_KEY=your-super-secret-key-for-sessions
+GOOGLE_CLIENT_ID=your_google_client_id_here
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 
 # 4. Start the server
-node server.js
-```
+npm start
 The main application will now be running at `http://localhost:3000`.
 
 ### 2. AI Services (Python)
