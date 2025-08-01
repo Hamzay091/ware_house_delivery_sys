@@ -66,8 +66,26 @@ document.addEventListener('DOMContentLoaded', () => {
             if (chartData.deliveryValues.some(v => v > 0)) {
                 new Chart(deliveryCtx, {
                     type: 'bar',
-                    data: { labels: chartData.deliveryLabels, datasets: [{ label: '# of Deliveries', data: chartData.deliveryValues, backgroundColor: 'rgba(160, 84, 54, 0.7)', borderColor: 'rgba(160, 84, 54, 1)', borderWidth: 1, borderRadius: 4 }] },
-                    options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                    data: { 
+                        labels: chartData.deliveryLabels, 
+                        datasets: [{ 
+                            label: '# of Deliveries', 
+                            data: chartData.deliveryValues, 
+                            backgroundColor: '#6a6c38',
+                            borderColor: '#5a5c28',
+                            hoverBackgroundColor: '#5a5c28',
+                            borderWidth: 1, 
+                            borderRadius: 4 
+                        }] 
+                    },
+                    options: { 
+                        scales: { 
+                            y: { 
+                                beginAtZero: true, 
+                                ticks: { stepSize: 1 } 
+                            } 
+                        } 
+                    }
                 });
             } else {
                 deliveryCtx.style.display = 'none';
@@ -76,10 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const stockCtx = document.getElementById('stockChart');
-        if (stockCtx && chartData.stockLabels && chartData.stockLabels.length > 0) {
-            const colorPalette = ['#5f3b1e', '#a05436', '#cfa27f', '#cbc8c7', '#746862', '#1b0f0a'];
-            const backgroundColors = chartData.stockLabels.map((_, i) => colorPalette[i % colorPalette.length]);
+        const stockCanvas = document.getElementById('stockChart');
+        if (stockCanvas && chartData.stockLabels && chartData.stockLabels.length > 0) {
+            const stockCtx = stockCanvas.getContext('2d');
+            const colorPalette = ['#6a6c38', '#2c3a2f', '#f6f4e1', '#d19c5d', '#c07c40'];
 
             new Chart(stockCtx, {
                 type: 'doughnut',
@@ -88,10 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     datasets: [{
                         label: 'Total Quantity',
                         data: chartData.stockValues,
-                        backgroundColor: backgroundColors,
-                        hoverOffset: 4,
-                        borderColor: '#1b0f0a',
-                        borderWidth: 1.5
+                        backgroundColor: colorPalette,
+                        hoverOffset: 12
                     }]
                 },
                 options: {
@@ -100,13 +116,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     plugins: {
                         legend: {
                             position: 'top',
+                            labels: {
+                                padding: 15,
+                                boxWidth: 15,
+                            }
+                        }
+                    },
+                  
+                    cutout: '60%', 
+                    elements: {
+                        arc: {
+                            borderWidth: 0,
+                            bevelWidth: 5,
+                            bevelHighlightColor: 'rgba(255, 255, 255, 0.4)',
+                            bevelShadowColor: 'rgba(0, 0, 0, 0.25)'
                         }
                     }
                 }
             });
         
-        } else if(stockCtx) {
-            stockCtx.parentElement.style.display = 'none';
+        } else if(stockCanvas) {
+            stockCanvas.parentElement.style.display = 'none';
             document.getElementById('stockChartError').style.display = 'block';
             document.getElementById('stockChartError').innerText = 'No stock data available.';
         }

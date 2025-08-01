@@ -399,6 +399,14 @@ form button.btn {
   margin-bottom: 0;
 }
 
+.card canvas {
+  filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.08));
+  transition: filter var(--transition-speed);
+}
+.card canvas:hover {
+   filter: drop-shadow(4px 4px 7px rgba(0, 0, 0, 0.12));
+}
+
 /* -- End Stat Card Grid -- */
 
 
