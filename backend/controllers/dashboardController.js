@@ -30,14 +30,14 @@ exports.renderAdminDashboard = async (req, res) => {
             deliveryValues[stat._id] = stat.count;
         });
         
-        // --- THIS QUERY IS NOW CORRECT ---
+
         const stockStats = await Item.aggregate([
             { $lookup: { from: 'stocks', localField: 'stockId', foreignField: '_id', as: 'stock' } },
             { $unwind: { path: '$stock', preserveNullAndEmptyArrays: true } },
             { 
                 $group: { 
                     _id: { $ifNull: ['$stock.name', 'Uncategorized'] }, 
-                    totalQuantity: { $sum: '$totalStock' } // Correctly sums 'totalStock'
+                    totalQuantity: { $sum: '$totalStock' } 
                 } 
             },
             { $sort: { totalQuantity: -1 } }

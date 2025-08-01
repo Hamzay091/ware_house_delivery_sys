@@ -5,10 +5,10 @@ const itemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   sku: { type: String, required: true },
   price: { type: Number, required: true, min: 0, default: 0 },
-  // --- SCHEMA CHANGES ---
+
   availableStock: { type: Number, required: true, default: 0, min: 0 },
   totalStock: { type: Number, required: true, default: 0, min: 0 },
-  // --- END OF CHANGES ---
+
   location: { type: String }
 });
 

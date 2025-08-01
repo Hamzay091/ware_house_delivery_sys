@@ -1,7 +1,7 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
 
-<!-- This hidden div provides all item data to our script -->
+
 <div id="item-data-provider" data-items='<%- itemsJSON %>' style="display: none;"></div>
 
 <main>
@@ -35,7 +35,7 @@
       
       <h3>Items to Include</h3>
       <div id="items-container">
-        <!-- Template for a single item row -->
+       
         <div class="item-row">
           <select name="items[0][itemId]" class="item-select" required>
             <option value="">-- Select an Item --</option>
@@ -44,7 +44,7 @@
             <% }) %>
           </select>
           <input type="number" name="items[0][quantity]" class="quantity-input" placeholder="Qty" min="1" required />
-          <span class="stock-info"></span> <!-- This will show available stock -->
+          <span class="stock-info"></span> 
         </div>
       </div>
       
@@ -57,13 +57,13 @@
   </form>
 </main>
 
-<!-- New, more powerful script for validation -->
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const dataProvider = document.getElementById('item-data-provider');
     if (!dataProvider) return;
 
-    // Parse the item data from the hidden div
+   
     const itemsData = JSON.parse(dataProvider.dataset.items);
     const itemsMap = new Map(itemsData.map(item => [item._id, item]));
 
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addItemBtn = document.getElementById('add-item-btn');
     let itemIndex = 1;
 
-    // Function to check stock for a single row
+    
     const checkStock = (row) => {
         const itemSelect = row.querySelector('.item-select');
         const quantityInput = row.querySelector('.quantity-input');
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (requestedQty > selectedItem.availableStock) {
                 stockInfo.style.color = 'var(--color-danger)';
                 quantityInput.style.borderColor = 'var(--color-danger)';
-                return false; // Invalid quantity
+                return false; 
             } else {
                 stockInfo.style.color = 'var(--color-success)';
                 quantityInput.style.borderColor = 'var(--color-border)';
@@ -95,10 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             stockInfo.textContent = '';
         }
-        return true; // Valid
+        return true; 
     };
 
-    // Function to validate all rows and enable/disable submit button
+    
     const validateAllRows = () => {
         let allValid = true;
         const rows = itemsContainer.querySelectorAll('.item-row');
@@ -111,15 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.style.opacity = allValid ? '1' : '0.6';
     };
 
-    // Add event listeners to the container for any input changes
+    
     itemsContainer.addEventListener('change', validateAllRows);
     itemsContainer.addEventListener('keyup', validateAllRows);
     itemsContainer.addEventListener('paste', validateAllRows);
 
-    // Logic for the "Add Another Item" button
+    
     if (addItemBtn) {
         const templateRow = itemsContainer.querySelector('.item-row').cloneNode(true);
-        // Clear inputs on the template
+        
         templateRow.querySelector('select').value = '';
         templateRow.querySelector('input').value = '';
 
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Add some styling for the new row layout
+  
     const style = document.createElement('style');
     style.innerHTML = `
         .item-row { display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
@@ -142,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.head.appendChild(style);
 
-    // Initial validation check
     validateAllRows();
 });
 </script>

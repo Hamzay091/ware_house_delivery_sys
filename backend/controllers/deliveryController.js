@@ -2,7 +2,6 @@ const User = require('../models/user');
 const Item = require('../models/item');
 const Delivery = require('../models/delivery');
 
-// This function is correct and does not need to be changed.
 exports.renderAssignForm = async (req, res) => {
     try {
         const staffList = await User.find({ role: 'DeliveryStaff' });
@@ -33,7 +32,7 @@ exports.renderAssignForm = async (req, res) => {
     }
 };
 
-// --- THIS IS THE FINAL, CORRECTED FUNCTION ---
+
 exports.createDelivery = async (req, res) => {
     const { assignedTo, customerAddress, items } = req.body;
     if (!items) return res.redirect('/deliveries/assign?error=No+items+were+selected.');
@@ -42,9 +41,6 @@ exports.createDelivery = async (req, res) => {
     if (validItems.length === 0) return res.redirect('/deliveries/assign?error=No+valid+items+were+provided.');
 
     try {
-        // --- START OF NEW, ROBUST VALIDATION BLOCK ---
-
-        // 1. Aggregate the total requested quantity for each unique item ID.
         const itemQuantities = {};
         for (const item of validItems) {
             const itemId = item.itemId;
@@ -52,7 +48,6 @@ exports.createDelivery = async (req, res) => {
             itemQuantities[itemId] = (itemQuantities[itemId] || 0) + quantity;
         }
 
-        // 2. Check the aggregated totals against the database.
         for (const itemId in itemQuantities) {
             const totalRequested = itemQuantities[itemId];
             const itemInDb = await Item.findById(itemId);
@@ -65,16 +60,14 @@ exports.createDelivery = async (req, res) => {
                 return res.redirect(`/deliveries/assign?error=${errorMessage}`);
             }
         }
-        // --- END OF NEW, ROBUST VALIDATION BLOCK ---
 
-        // If all validations pass, proceed with creating the delivery
         await Delivery.create({
             assignedTo,
             customerAddress,
             items: validItems.map(item => ({ itemId: item.itemId, quantity: Number(item.quantity) }))
         });
 
-        // And then update the stock for each item
+    
         for (const itemId in itemQuantities) {
             const totalToDecrement = itemQuantities[itemId];
             await Item.findByIdAndUpdate(itemId, { $inc: { availableStock: -totalToDecrement } });

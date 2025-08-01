@@ -21,7 +21,7 @@
           <th>Total Stock</th>
           <th>Available Stock</th>
           <th>Price</th>
-          <!-- Re-added AI Columns -->
+        
           <th title="Predicted sales per day based on the last 30 days of delivery data.">
             AI: Daily Burn <span style="color: var(--color-info);">ⓘ</span>
           </th>
@@ -36,12 +36,12 @@
         <% if (items.length > 0) { %>
           <% items.forEach(item => { %>
             <% 
-              // Enhanced highlighting logic that prioritizes the AI forecast
+              
               let rowClass = '';
               if (item.forecast && typeof item.forecast.daysOfStockLeft === 'number' && item.forecast.daysOfStockLeft <= 7) {
-                rowClass = 'critical-stock'; // Most important warning
+                rowClass = 'critical-stock'; 
               } else if (item.availableStock < 10 && item.availableStock > 0) {
-                rowClass = 'low-stock'; // Secondary warning
+                rowClass = 'low-stock'; 
               }
             %>
             <tr class="<%= rowClass %>">
@@ -51,7 +51,7 @@
               <td><%= item.availableStock || 0 %></td>
               <td>$<%= (item.price || 0).toFixed(2) %></td>
               
-              <!-- AI Daily Burn Column with safety check -->
+              
               <td>
                 <% if (item.forecast && typeof item.forecast.dailyBurnRate === 'number') { %>
                   <%= item.forecast.dailyBurnRate %>/day
@@ -60,7 +60,7 @@
                 <% } %>
               </td>
 
-              <!-- AI Stock Left Column with safety and infinity check -->
+              
               <td>
                 <% if (item.forecast && typeof item.forecast.daysOfStockLeft === 'number') { %>
                   <% if (item.forecast.daysOfStockLeft > 365) { %>
@@ -81,7 +81,7 @@
             </tr>
           <% }) %>
         <% } else { %>
-          <!-- Updated colspan to account for the 9 columns -->
+          
           <tr><td colspan="9" style="text-align: center;">No items found.</td></tr>
         <% } %>
       </tbody>

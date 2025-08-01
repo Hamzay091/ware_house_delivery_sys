@@ -34,7 +34,6 @@ def get_coordinates(address):
         response.raise_for_status()
         data = response.json()
 
-        # --- THIS IS THE MOST IMPORTANT PART: PRINT THE RAW RESPONSE ---
         print("\n--- RAW RESPONSE FROM POSITIONSTACK ---")
         print(data)
         print("--- END OF RAW RESPONSE ---\n")
@@ -49,7 +48,7 @@ def get_coordinates(address):
                 print("❌ ERROR: Response was successful, but latitude or longitude is missing.")
                 return None
         else:
-            # Check for a specific error message from the API
+            
             if 'error' in data:
                 error_info = data['error']
                 print(f"❌ ERROR: PositionStack API returned an error: Code {error_info.get('code')} - {error_info.get('message')}")
@@ -61,7 +60,7 @@ def get_coordinates(address):
         print(f"❌ NETWORK ERROR: Failed to connect to PositionStack API: {e}")
         return None
 
-# The rest of the file remains the same...
+
 def greedy_algorithm(addresses_with_coords):
     if not addresses_with_coords: return []
     addr_map = {i: addr for i, addr in enumerate(addresses_with_coords)}

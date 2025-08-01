@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const dashboardController = require('../controllers/dashboardController'); // Corrected Path
-const { isAuthenticated, isAdmin, isManagerOrAdmin, isDeliveryStaff } = require('../middleware/authMiddleware'); // Corrected Path
+const dashboardController = require('../controllers/dashboardController'); 
+const { isAuthenticated, isAdmin, isManagerOrAdmin, isDeliveryStaff } = require('../middleware/authMiddleware'); 
 
 router.get('/admin-dashboard', isAuthenticated, isAdmin, dashboardController.renderAdminDashboard);
 router.get('/manager-dashboard', isAuthenticated, isManagerOrAdmin, dashboardController.renderManagerDashboard);

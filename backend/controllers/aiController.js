@@ -1,4 +1,4 @@
-const Delivery = require('../models/delivery'); // Corrected Path
+const Delivery = require('../models/delivery'); 
 const fetch = require('node-fetch');
 
 exports.getOptimizedRoute = async (req, res) => {

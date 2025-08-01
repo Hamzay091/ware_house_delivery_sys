@@ -1,8 +1,8 @@
-const Item = require('../models/item');       // Corrected Path
-const Stock = require('../models/stock');     // Corrected Path
-const Delivery = require('../models/delivery'); // Corrected Path
+const Item = require('../models/item');      
+const Stock = require('../models/stock');    
+const Delivery = require('../models/delivery'); 
 
-// ... rest of the file is the same
+
 exports.getAllItems = async (req, res) => {
     try {
         const searchQuery = req.query.search || '';
@@ -45,20 +45,20 @@ exports.createItem = async (req, res) => {
         }
 
         if (existingItem) {
-            // Case A: Restock existing item. Increment both counts.
+        
             existingItem.availableStock += quantityToAdd;
-            existingItem.totalStock += quantityToAdd; // Also increment total stock
+            existingItem.totalStock += quantityToAdd; 
             existingItem.price = itemPrice;
             existingItem.location = location;
             await existingItem.save();
         } else {
-            // Case B: Create a new item. Both counts start the same.
+           
             await Item.create({
                 stockId: currentStock._id,
                 name: currentStock.name,
                 sku,
                 availableStock: quantityToAdd,
-                totalStock: quantityToAdd, // Total stock is the initial amount
+                totalStock: quantityToAdd, 
                 location,
                 price: itemPrice
             });

@@ -1,5 +1,5 @@
 <nav>
-  <!-- The main navigation links -->
+ 
   <ul>
     <li><a href="/">Home</a></li>
     <li><a href="/#about-section">About</a></li>
@@ -25,32 +25,29 @@
     <% } %>
   </ul>
 
-  <!-- Admin Control Menu Icon (The trigger for the sidebar) -->
   <% if (user && user.role === 'Admin') { %>
-    <button id="admin-menu-toggle" class="admin-menu-icon" aria-label="Open Admin Menu">☰</button>
+    <button id="admin-menu-toggle" class="admin-menu-icon" aria-label="Open Admin Menu"><i class="fa-solid fa-bars-staggered"></i></button>
   <% } %>
 </nav>
 
-<!-- This part is rendered only for the admin, outside the nav flow -->
+
 <% if (user && user.role === 'Admin') { %>
-  <!-- The semi-transparent background overlay -->
+
   <div id="sidebar-overlay"></div>
   
-  <!-- The actual sidebar that slides in -->
   <aside id="admin-sidebar">
     <div class="sidebar-header">
       <h3>Admin Controls</h3>
-      <button id="sidebar-close-btn" aria-label="Close Admin Menu">×</button>
+      <button id="sidebar-close-btn" aria-label="Close Admin Menu"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="sidebar-links">
-      <a href="/admin/view-as/manager">View Manager Dashboard</a>
-      <a href="/admin/managers">Manage Managers</a>
-      <a href="/admin/delivery-staff">Manage Delivery Staff</a>
+      <a href="/admin/view-as/manager"><i class="fa-solid fa-chalkboard-user"></i> View Manager Dashboard</a>
+      <a href="/admin/managers"><i class="fa-solid fa-user-tie"></i> Manage Managers</a>
+      <a href="/admin/delivery-staff"><i class="fa-solid fa-truck-fast"></i> Manage Delivery Staff</a>
     </div>
   </aside>
 <% } %>
 
-<!-- JavaScript to control the sidebar -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const toggleButton = document.getElementById('admin-menu-toggle');

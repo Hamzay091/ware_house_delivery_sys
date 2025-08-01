@@ -1,8 +1,7 @@
-const User = require('../models/user');       // Corrected Path
-const Delivery = require('../models/delivery'); // Corrected Path
+const User = require('../models/user');       
+const Delivery = require('../models/delivery');
 const bcrypt = require('bcryptjs');
 
-// ... rest of the file is the same
 exports.getAllUsers = async (req, res) => { const users = await User.find(); res.render('user-management', { users }); };
 exports.renderEditForm = async (req, res) => { const userToEdit = await User.findById(req.params.id); res.render('edit-user', { userToEdit }); };
 exports.updateUser = async (req, res) => { await User.findByIdAndUpdate(req.params.id, req.body); res.redirect('/users/manage'); };

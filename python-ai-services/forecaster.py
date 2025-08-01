@@ -6,10 +6,7 @@ from datetime import datetime, timedelta
 load_dotenv()
 
 def run_inventory_forecast():
-    """
-    Connects to MongoDB and uses a robust two-step process to generate forecasts,
-    making it immune to system clock differences and query loop issues.
-    """
+   
     print("--- Starting Robust Inventory Forecast Task (FINAL) ---")
     try:
         client = MongoClient(os.getenv('MONGO_URI'))
@@ -56,8 +53,7 @@ def run_inventory_forecast():
             total_sold = sales_data.get(item['_id'], 0)
             daily_burn_rate = total_sold / 30.0
 
-            # --- THIS LOGIC IS NOW CORRECT ---
-            # It uses the new 'availableStock' field for its calculation
+           
             if item.get('availableStock', 0) <= 0:
                 days_of_stock_left = 0.0
             elif daily_burn_rate > 0:

@@ -20,7 +20,7 @@ def run_super_diagnostic():
         return
 
     try:
-        # 1. Find a single, specific item that we KNOW was delivered.
+     
         print("\nStep 1: Finding a sample delivered item...")
         delivered_order = deliveries_collection.find_one({'status': 'Delivered'})
         
@@ -33,20 +33,20 @@ def run_super_diagnostic():
         print(f"Found a target item from a delivered order. Item ID: {target_item_id}")
         print(f"Type of this ID is: {type(target_item_id)}")
 
-        # 2. Find the reference time from the latest delivery.
+        
         latest_delivery = deliveries_collection.find_one(sort=[('createdAt', -1)])
         now_reference = latest_delivery['createdAt']
         thirty_days_ago = now_reference - timedelta(days=30)
         print(f"\nStep 2: Time window is set correctly. Querying for items delivered after: {thirty_days_ago}")
 
-        # 3. Build the EXACT same query pipeline the real script uses.
+      
         print("\nStep 3: Simulating the AI forecaster's query for this single item...")
         
         delivery_pipeline = [
             {
                 '$match': {
                     'createdAt': {'$gte': thirty_days_ago},
-                    'items.itemId': target_item_id, # Use the ID we found
+                    'items.itemId': target_item_id, 
                     'status': 'Delivered'
                 }
             },
@@ -55,13 +55,13 @@ def run_super_diagnostic():
             {'$group': {'_id': '$items.itemId', 'totalSold': {'$sum': '$items.quantity'}}}
         ]
 
-        # 4. Execute the query and print the raw result.
+     
         result = list(deliveries_collection.aggregate(delivery_pipeline))
         print("\n--- QUERY RESULT ---")
         print(result)
         print("--- END OF RESULT ---")
 
-        # 5. Final Conclusion
+    
         print("\n--- FINAL DIAGNOSIS ---")
         if result and result[0]['totalSold'] > 0:
             print(f"✅ SUCCESS: The query correctly found {result[0]['totalSold']} delivered units for the target item.")

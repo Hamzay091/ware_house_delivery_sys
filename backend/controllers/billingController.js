@@ -1,7 +1,6 @@
-const Invoice = require('../models/invoice');   // Corrected Path
-const Delivery = require('../models/delivery'); // Corrected Path
+const Invoice = require('../models/invoice');   
+const Delivery = require('../models/delivery'); 
 
-// ... rest of the file is the same
 exports.renderInvoicesPage = async (req, res) => {
     try {
         const invoices = await Invoice.find().sort({ invoiceDate: -1 });

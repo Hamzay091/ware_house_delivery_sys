@@ -5,7 +5,7 @@ const invoiceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Delivery',
         required: true,
-        unique: true // Each delivery can only have one invoice
+        unique: true 
     },
     customerAddress: { type: String, required: true },
     totalAmount: { type: Number, required: true },

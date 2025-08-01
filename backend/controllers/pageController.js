@@ -1,26 +1,24 @@
 const Item = require('../models/item');
 const Contact = require('../models/contact');
 
-// This function now renders our new, big landing page
 exports.renderHomePage = (req, res) => {
-  // Pass an empty message variable so the page doesn't error on first load
+
   res.render('index', { message: null });
 };
 
-// This function now renders 'index' instead of 'contact' after submission
+
 exports.handleContactForm = async (req, res) => {
   try {
     await Contact.create(req.body);
-    // On success, re-render the index page with a success message
+    
     res.render('index', { message: 'Thank you for your message! We will get back to you soon.' });
   } catch (error) {
     console.error('Contact form submission error:', error);
-    // On error, re-render the index page with an error message
+  
     res.render('index', { message: 'Sorry, there was an error sending your message.' });
   }
 };
 
-// These functions remain the same
 exports.renderProfilePage = (req, res) => res.render('profile');
 
 exports.renderStockCataloguePage = async (req, res) => {

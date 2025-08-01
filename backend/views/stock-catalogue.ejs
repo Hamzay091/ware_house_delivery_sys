@@ -7,13 +7,13 @@
   <div class="stock-grid">
     <% if (items.length > 0) { %>
       <% items.forEach(item => { %>
-        <!-- This now correctly uses 'availableStock' -->
+      
         <div class="stock-card <%= item.availableStock > 0 ? 'in-stock' : 'out-of-stock' %>">
           <h3><%= item.name %></h3>
           <p><strong>SKU:</strong> <span class="sku"><%= item.sku %></span></p>
           <p><strong>Location:</strong> <%= item.location || 'N/A' %></p>
           <hr style="margin: 15px 0; border-color: var(--border-color);">
-          <!-- This now correctly uses 'availableStock' -->
+     
           <p class="stock-status"><%= item.availableStock > 0 ? `${item.availableStock} units in stock` : 'Out of Stock' %></p>
         </div>
       <% }) %>
