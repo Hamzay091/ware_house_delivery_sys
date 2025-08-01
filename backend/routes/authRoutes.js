@@ -25,7 +25,10 @@ router.get('/logout', authController.handleLogout);
 
 
 router.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] }));
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account' 
+  }));
 
 router.get('/auth/google/callback', (req, res, next) => {
     passport.authenticate('google', (err, user, info) => {
