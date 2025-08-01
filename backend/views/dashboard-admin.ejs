@@ -7,7 +7,8 @@
 <main>
   <h2>Admin Control Panel</h2>
 
-  <!-- Updated Stats Grid -->
+  <%- include('partials/_notifications') %>
+
   <div class="stats-grid">
     <div class="card stat-card"><h3>Total Users</h3><p><%= stats.users %></p></div>
     <div class="card stat-card"><h3>Warehouse Items</h3><p><%= stats.items %></p></div>
@@ -122,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
                     },
-                  
                     cutout: '60%', 
                     elements: {
                         arc: {

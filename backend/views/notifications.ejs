@@ -1,0 +1,50 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+    <h2>All Notifications</h2>
+    <p style="text-align:center;">A complete history of all your alerts and notifications.</p>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (notifications.length > 0) { %>
+                    <% notifications.forEach(notification => { %>
+                        <tr class="<%= notification.status === 'unread' ? 'notification-unread' : '' %>">
+                            <td><%= new Date(notification.createdAt).toLocaleString() %></td>
+                            <td>
+                                <% if (notification.link) { %>
+                                    <a href="<%= notification.link %>"><%= notification.message %></a>
+                                <% } else { %>
+                                    <%= notification.message %>
+                                <% } %>
+                            </td>
+                            <td>
+                                <span class="status-pill <%= notification.status %>"><%= notification.status.charAt(0).toUpperCase() + notification.status.slice(1) %></span>
+                            </td>
+                            <td>
+                                <% if (notification.status === 'unread') { %>
+                                    <a href="/notifications/read/<%= notification._id %>" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Mark as Read</a>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="4" style="text-align: center;">You have no notifications.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<%- include('partials/footer') %>

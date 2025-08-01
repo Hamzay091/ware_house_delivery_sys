@@ -1,7 +1,9 @@
 const Item = require('../models/item');      
 const Stock = require('../models/stock');    
 const Delivery = require('../models/delivery'); 
+const { createLowStockAlert } = require('../utils/notificationService');
 
+const STOCK_THRESHOLD = 10;
 
 exports.getAllItems = async (req, res) => {
     try {
@@ -83,6 +85,10 @@ exports.renderEditItemForm = async (req, res) => {
 };
 exports.updateItem = async (req, res) => {
     try {
+        const itemBeforeUpdate = await Item.findById(req.params.id);
+        if (!itemBeforeUpdate) return res.status(404).send("Item not found.");
+        const previousStock = itemBeforeUpdate.availableStock;
+
         const { stockId, price, availableStock, totalStock } = req.body;
         const stock = await Stock.findById(stockId);
         if (!stock) { return res.status(400).send("Invalid stock category selected."); }
@@ -95,7 +101,12 @@ exports.updateItem = async (req, res) => {
             totalStock: Number(totalStock)
         };
 
-        await Item.findByIdAndUpdate(req.params.id, updateData);
+        const updatedItem = await Item.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        
+        if (previousStock >= STOCK_THRESHOLD && updatedItem.availableStock < STOCK_THRESHOLD) {
+            await createLowStockAlert(updatedItem);
+        }
+
         res.redirect('/inventory');
     } catch (error) {
         const item = await Item.findById(req.params.id);

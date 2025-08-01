@@ -4,6 +4,8 @@
 <main>
   <h2>Manager: Delivery Tracking Hub</h2>
 
+  <%- include('partials/_notifications') %>
+
   <% if (locals.error) { %>
     <div class="feedback-box error-box"><%= locals.error %></div>
   <% } %>

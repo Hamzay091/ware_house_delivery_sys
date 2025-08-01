@@ -1,0 +1,16 @@
+<% if (locals.notifications && notifications.length > 0) { %>
+  <div class="notifications-container card">
+    <h3><i class="fa-solid fa-bell" style="color: var(--color-warning);"></i> Recent Notifications</h3>
+    <ul>
+      <% notifications.forEach(notification => { %>
+        <li class="notification-item">
+          <a href="<%= notification.link %>" class="notification-link">
+            <%= notification.message %>
+            <small><%= new Date(notification.createdAt).toLocaleString() %></small>
+          </a>
+          <a href="/notifications/read/<%= notification._id %>" class="mark-as-read" title="Mark as Read">×</a>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>

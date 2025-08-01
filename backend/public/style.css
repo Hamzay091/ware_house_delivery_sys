@@ -403,8 +403,9 @@ form button.btn {
   filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.08));
   transition: filter var(--transition-speed);
 }
+
 .card canvas:hover {
-   filter: drop-shadow(4px 4px 7px rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(4px 4px 7px rgba(0, 0, 0, 0.12));
 }
 
 /* -- End Stat Card Grid -- */
@@ -829,4 +830,81 @@ body.sidebar-open #admin-sidebar {
     margin: 0;
     border-radius: 0;
   }
+}
+
+/* 13. NOTIFICATION STYLES */
+.notifications-container {
+  margin-bottom: 30px;
+  background-color: #fff8e1;
+  border-color: #f39c12;
+}
+
+.notifications-container h3 {
+  border: none;
+  margin-bottom: 15px;
+}
+
+.notifications-container ul {
+  list-style: none;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-link {
+  display: flex;
+  flex-direction: column;
+  color: var(--color-text-primary);
+}
+
+.notification-link:hover {
+  color: var(--color-primary);
+}
+
+.notification-link small {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+.mark-as-read {
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: 0 10px;
+}
+
+.mark-as-read:hover {
+  color: var(--color-danger);
+}
+
+/* 14. DEDICATED NOTIFICATIONS PAGE STYLES */
+.notification-unread {
+  background-color: var(--color-bg);
+  font-weight: 500;
+}
+
+.notification-unread td a {
+  color: var(--color-dark);
+}
+
+.status-pill.read {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.status-pill.unread {
+  color: var(--color-warning);
+  border-color: #feeccf;
+  font-weight: bold;
 }

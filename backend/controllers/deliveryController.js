@@ -1,6 +1,9 @@
 const User = require('../models/user');
 const Item = require('../models/item');
 const Delivery = require('../models/delivery');
+const { createLowStockAlert } = require('../utils/notificationService');
+
+const STOCK_THRESHOLD = 10;
 
 exports.renderAssignForm = async (req, res) => {
     try {
@@ -70,7 +73,14 @@ exports.createDelivery = async (req, res) => {
     
         for (const itemId in itemQuantities) {
             const totalToDecrement = itemQuantities[itemId];
-            await Item.findByIdAndUpdate(itemId, { $inc: { availableStock: -totalToDecrement } });
+            const itemBeforeUpdate = await Item.findById(itemId);
+            const previousStock = itemBeforeUpdate.availableStock;
+
+            const updatedItem = await Item.findByIdAndUpdate(itemId, { $inc: { availableStock: -totalToDecrement } }, { new: true });
+            
+            if (previousStock >= STOCK_THRESHOLD && updatedItem.availableStock < STOCK_THRESHOLD) {
+                await createLowStockAlert(updatedItem);
+            }
         }
 
         res.redirect('/manager-dashboard');

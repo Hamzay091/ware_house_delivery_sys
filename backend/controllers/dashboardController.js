@@ -2,9 +2,12 @@ const User = require('../models/user');
 const Item = require('../models/item');
 const Delivery = require('../models/delivery');
 const Contact = require('../models/contact');
+const Notification = require('../models/notification');
 
 exports.renderAdminDashboard = async (req, res) => {
     try {
+        const notifications = await Notification.find({ userId: req.user._id, status: 'unread' }).sort({ createdAt: -1 });
+
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
 
@@ -58,16 +61,18 @@ exports.renderAdminDashboard = async (req, res) => {
             pending: await Delivery.countDocuments({ status: 'Pending' }) 
         };
         
-        res.render('dashboard-admin', { stats, chartDataJSON });
+        res.render('dashboard-admin', { stats, chartDataJSON, notifications });
 
     } catch (error) {
         console.error("Error rendering admin dashboard:", error);
-        res.render('dashboard-admin', { stats: {}, chartDataJSON: '{}' });
+        res.render('dashboard-admin', { stats: {}, chartDataJSON: '{}', notifications: [] });
     }
 };
 
 exports.renderManagerDashboard = async (req, res) => {
     try {
+        const notifications = await Notification.find({ userId: req.user._id, status: 'unread' }).sort({ createdAt: -1 });
+
         const deliveries = await Delivery.find()
             .sort({ updatedAt: -1 })
             .populate({
@@ -78,7 +83,7 @@ exports.renderManagerDashboard = async (req, res) => {
                     model: 'Stock'
                 }
             });
-        res.render('dashboard-manager', { deliveries });
+        res.render('dashboard-manager', { deliveries, notifications });
     } catch (error) {
         console.error("Error fetching manager dashboard deliveries:", error);
         res.status(500).send("Error loading manager dashboard.");

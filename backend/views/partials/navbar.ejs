@@ -9,6 +9,7 @@
       <% if (user.role === 'Admin' || user.role === 'Manager') { %>
         <li><a href="/inventory">Inventory</a></li>
         <li><a href="/billing/invoices">Billing</a></li>
+        <!-- NOTIFICATIONS LINK HAS BEEN MOVED TO THE ADMIN SIDEBAR -->
       <% } %>
       <% if (user.role === 'Admin') { %>
         <li><a href="/admin-dashboard">Admin Dashboard</a></li>
@@ -32,15 +33,14 @@
 
 
 <% if (user && user.role === 'Admin') { %>
-
   <div id="sidebar-overlay"></div>
-  
   <aside id="admin-sidebar">
     <div class="sidebar-header">
       <h3>Admin Controls</h3>
       <button id="sidebar-close-btn" aria-label="Close Admin Menu"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="sidebar-links">
+      <a href="/notifications"><i class="fa-solid fa-bell"></i> Notifications</a>
       <a href="/admin/view-as/manager"><i class="fa-solid fa-chalkboard-user"></i> View Manager Dashboard</a>
       <a href="/admin/managers"><i class="fa-solid fa-user-tie"></i> Manage Managers</a>
       <a href="/admin/delivery-staff"><i class="fa-solid fa-truck-fast"></i> Manage Delivery Staff</a>
