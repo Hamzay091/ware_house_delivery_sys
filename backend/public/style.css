@@ -546,7 +546,9 @@ td .action-link.delete-link {
   color: rgba(255, 255, 255, 0.8);
   max-width: 700px;
   font-size: 1.2rem;
-  margin-bottom: 40px;
+  margin: 0 auto 40px auto;
+  border: none;
+  padding: 25px 30px;
 }
 
 .hero-cta {

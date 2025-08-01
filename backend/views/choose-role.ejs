@@ -1,0 +1,23 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<main>
+  <form action="/choose-role" method="POST">
+    <h2>Welcome, <%= name %>!</h2>
+    <p style="text-align: center; margin-top: -20px; margin-bottom: 25px;">
+        To complete your registration, please select your role in the system.
+    </p>
+
+    <label for="role">Select Your Role</label>
+    <select id="role" name="role" required>
+      <option value="">-- Please Choose a Role --</option>
+      <option value="Admin">Admin</option>
+      <option value="Manager">Manager</option>
+      <option value="DeliveryStaff">Delivery Staff</option>
+    </select>
+    
+    <button type="submit" class="btn btn-primary">Complete Registration</button>
+  </form>
+</main>
+
+<%- include('partials/footer') %>

@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
+    googleId: { type: String }, 
     name: String,
     email: { type: String, unique: true, required: true },
-    password: { type: String, required: true },
+    password: { type: String }, 
     role: String,
     phone: String,
     socialLink: String,
@@ -12,7 +13,7 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) return next();
+    if (!this.isModified('password') || !this.password) return next();
     this.password = await bcrypt.hash(this.password, 12);
     next();
 });

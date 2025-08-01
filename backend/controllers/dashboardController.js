@@ -87,7 +87,7 @@ exports.renderManagerDashboard = async (req, res) => {
 
 exports.renderStaffDashboard = async (req, res) => {
     try {
-        const deliveries = await Delivery.find({ assignedTo: req.session.user.name })
+        const deliveries = await Delivery.find({ assignedTo: req.user.name })
             .sort({ updatedAt: -1 })
             .populate({
                 path: 'items.itemId',
