@@ -23,22 +23,19 @@ router.post('/login', [
 ], authController.handleLogin);
 router.get('/logout', authController.handleLogout);
 
-
 router.get('/auth/google',
-  passport.authenticate('google', {
-    scope: ['profile', 'email'],
-    prompt: 'select_account' 
-  }));
+  passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' }));
 
 router.get('/auth/google/callback', (req, res, next) => {
     passport.authenticate('google', (err, user, info) => {
         if (err) { return next(err); }
-        
         if (!user) {
             req.session.oauthProfile = info.profile;
             return res.redirect('/choose-role');
         }
-
+        if (user.status !== 'approved') {
+            return res.render('login', { error: 'Your account is still pending approval.', errors: [] });
+        }
         req.login(user, (err) => {
             if (err) { return next(err); }
             const redirectUrl = {
@@ -51,9 +48,7 @@ router.get('/auth/google/callback', (req, res, next) => {
     })(req, res, next);
 });
 
-
 router.get('/choose-role', ensureAuthProfile, authController.renderChooseRolePage);
 router.post('/choose-role', ensureAuthProfile, authController.handleChooseRole);
-
 
 module.exports = router;

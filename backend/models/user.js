@@ -9,7 +9,12 @@ const userSchema = new mongoose.Schema({
     role: String,
     phone: String,
     socialLink: String,
-    gender: String
+    gender: String,
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    }
 });
 
 userSchema.pre('save', async function(next) {

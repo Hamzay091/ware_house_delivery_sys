@@ -8,6 +8,9 @@
     <% if (error) { %>
       <div class="feedback-box error-box"><%= error %></div>
     <% } %>
+    <% if (locals.successMessage) { %>
+      <div class="feedback-box success-box"><%= successMessage %></div>
+    <% } %>
     <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
       <div class="feedback-box error-box">
         <ul style="list-style-type: none; padding: 0; margin: 0;">

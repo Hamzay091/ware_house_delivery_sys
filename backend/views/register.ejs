@@ -5,14 +5,14 @@
   <form action="/register" method="POST">
     <h2>Create Your Account</h2>
     <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
-  <div class="feedback-box error-box">
-    <ul style="list-style-type: none; padding: 0; margin: 0;">
-      <% errors.forEach(function(error) { %>
-        <li><%= error.msg %></li>
-      <% }); %>
-    </ul>
-  </div>
-<% } %>
+      <div class="feedback-box error-box">
+        <ul style="list-style-type: none; padding: 0; margin: 0;">
+          <% errors.forEach(function(error) { %>
+            <li><%= error.msg %></li>
+          <% }); %>
+        </ul>
+      </div>
+    <% } %>
     <label for="name">Full Name</label>
     <input type="text" id="name" name="name" placeholder="e.g., John Doe" required />
     

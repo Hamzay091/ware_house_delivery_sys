@@ -1,24 +1,73 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
 <main>
-  <h2>Contact Form Submissions</h2>
-  <table>
-    <thead><tr><th>Date</th><th>From</th><th>Email</th><th>Message</th><th>Status</th></tr></thead>
-    <tbody>
-      <% if (messages.length > 0) { %>
-        <% messages.forEach(msg => { %>
-          <tr class="message-<%= msg.status.toLowerCase() %>">
-            <td><%= new Date(msg.createdAt).toLocaleString() %></td>
-            <td><%= msg.name %></td>
-            <td><a href="mailto:<%= msg.email %>"><%= msg.email %></a></td>
-            <td><%= msg.message %></td>
-            <td><%= msg.status %></td>
-          </tr>
-        <% }) %>
-      <% } else { %>
-        <tr><td colspan="5">There are no messages.</td></tr>
-      <% } %>
-    </tbody>
-  </table>
+    <h2>User Management</h2>
+    <p style="text-align: center;">Approve, manage, and edit all users in the system.</p>
+
+    <h3>Pending Approval</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Requested Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (pendingUsers.length > 0) { %>
+                    <% pendingUsers.forEach(user => { %>
+                        <tr>
+                            <td><%= user.name %></td>
+                            <td><%= user.email %></td>
+                            <td><%= user.role %></td>
+                            <td style="display: flex; gap: 10px;">
+                                <form action="/users/approve/<%= user._id %>" method="POST" style="margin: 0;">
+                                    <button type="submit" class="btn btn-success" style="padding: 5px 10px; font-size: 0.8rem;">Approve</button>
+                                </form>
+                                <form action="/users/reject/<%= user._id %>" method="POST" style="margin: 0;">
+                                    <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr><td colspan="4" style="text-align: center;">No users are currently pending approval.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <h3 style="margin-top: 40px;">Approved Users</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (approvedUsers.length > 0) { %>
+                    <% approvedUsers.forEach(user => { %>
+                        <tr>
+                            <td><%= user.name %></td>
+                            <td><%= user.email %></td>
+                            <td><%= user.role %></td>
+                            <td>
+                                <a href="/users/edit/<%= user._id %>" class="action-link">Edit</a>
+                                <a href="/users/delete/<%= user._id %>" class="action-link delete-link" onclick="return confirm('Are you sure? This action will permanently delete the user and their associated data.');">Delete</a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr><td colspan="4" style="text-align: center;">No approved users found.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
 </main>
 <%- include('partials/footer') %>

@@ -50,6 +50,7 @@
   </div>
 </main>
 
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     try {
@@ -98,7 +99,50 @@ document.addEventListener('DOMContentLoaded', () => {
         const stockCanvas = document.getElementById('stockChart');
         if (stockCanvas && chartData.stockLabels && chartData.stockLabels.length > 0) {
             const stockCtx = stockCanvas.getContext('2d');
-            const colorPalette = ['#6a6c38', '#2c3a2f', '#f6f4e1', '#d19c5d', '#c07c40'];
+            
+            const generateUltimatePalette = (numColors) => {
+                const themeColorsHex = [
+                    '#1b0f0a', 
+                    '#541924', 
+                    '#2c3a2f', 
+                    '#5f3b1e', 
+                    '#6a6c38', 
+                    '#73675f',
+                    '#a05436', 
+                    '#a69281',
+                    '#d19c5d', 
+                    '#f6f4e1'  
+                ];
+
+                const parseHex = hex => hex.replace(/^#/, '').match(/.{1,2}/g).map(v => parseInt(v, 16));
+                const rgbToHex = (r, g, b) => '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+                const interpolate = (color1, color2, factor) => {
+                    const result = color1.slice();
+                    for (let i = 0; i < 3; i++) { result[i] = Math.round(result[i] + factor * (color2[i] - result[i])); }
+                    return result;
+                };
+
+                const themeColorsRgb = themeColorsHex.map(parseHex);
+                const palette = [];
+
+                if (numColors <= 1) return [themeColorsHex[0]];
+
+                for (let i = 0; i < numColors; i++) {
+                    const position = i / (numColors - 1);
+                    const segment = Math.floor(position * (themeColorsRgb.length - 1));
+                    const segmentFactor = (position * (themeColorsRgb.length - 1)) % 1;
+                    
+                    const colorA = themeColorsRgb[segment];
+                    const colorB = themeColorsRgb[Math.min(segment + 1, themeColorsRgb.length - 1)];
+                    
+                    const newColor = interpolate(colorA, colorB, segmentFactor);
+                    palette.push(rgbToHex(newColor[0], newColor[1], newColor[2]));
+                }
+                
+                return palette;
+            };
+
+            const finalColors = generateUltimatePalette(chartData.stockLabels.length);
 
             new Chart(stockCtx, {
                 type: 'doughnut',
@@ -107,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     datasets: [{
                         label: 'Total Quantity',
                         data: chartData.stockValues,
-                        backgroundColor: colorPalette,
+                        backgroundColor: finalColors,
                         hoverOffset: 12
                     }]
                 },
