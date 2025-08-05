@@ -17,9 +17,9 @@ def get_coordinates(address):
     print(f"Attempting to find coordinates for: '{address}'")
 
     if not POSITIONSTACK_API_KEY:
-        print("❌ FATAL ERROR: POSITIONSTACK_API_KEY is not set or found in the .env file.")
+        print(" FATAL ERROR: POSITIONSTACK_API_KEY is not set or found in the .env file.")
         return None
-    print("✅ API Key loaded successfully.")
+    print(" API Key loaded successfully.")
 
     api_url = "http://api.positionstack.com/v1/forward"
     params = {
@@ -42,22 +42,22 @@ def get_coordinates(address):
             result = data['data'][0]
             if 'latitude' in result and 'longitude' in result:
                 coords = [result['latitude'], result['longitude']]
-                print(f"✅ SUCCESS: Extracted coordinates: {coords}")
+                print(f" SUCCESS: Extracted coordinates: {coords}")
                 return coords
             else:
-                print("❌ ERROR: Response was successful, but latitude or longitude is missing.")
+                print(" ERROR: Response was successful, but latitude or longitude is missing.")
                 return None
         else:
             
             if 'error' in data:
                 error_info = data['error']
-                print(f"❌ ERROR: PositionStack API returned an error: Code {error_info.get('code')} - {error_info.get('message')}")
+                print(f" ERROR: PositionStack API returned an error: Code {error_info.get('code')} - {error_info.get('message')}")
             else:
-                print("❌ ERROR: No valid data found for the address in the response.")
+                print(" ERROR: No valid data found for the address in the response.")
             return None
 
     except requests.exceptions.RequestException as e:
-        print(f"❌ NETWORK ERROR: Failed to connect to PositionStack API: {e}")
+        print(f" NETWORK ERROR: Failed to connect to PositionStack API: {e}")
         return None
 
 

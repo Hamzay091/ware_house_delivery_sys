@@ -14,9 +14,9 @@ def run_super_diagnostic():
         deliveries_collection = db.deliveries
         items_collection = db.items
         client.admin.command('ping')
-        print("✅ Database connection successful.")
+        print("Database connection successful.")
     except Exception as e:
-        print(f"❌ CRITICAL ERROR: Could not connect to MongoDB. Error: {e}")
+        print(f" CRITICAL ERROR: Could not connect to MongoDB. Error: {e}")
         return
 
     try:

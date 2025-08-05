@@ -14,9 +14,9 @@ def run_inventory_forecast():
         items_collection = db.items
         deliveries_collection = db.deliveries
         client.admin.command('ping')
-        print("✅ Database connection successful.")
+        print(" Database connection successful.")
     except Exception as e:
-        print(f"❌ CRITICAL ERROR: Could not connect to MongoDB. Error: {e}")
+        print(f" CRITICAL ERROR: Could not connect to MongoDB. Error: {e}")
         return
 
     try:
@@ -76,10 +76,10 @@ def run_inventory_forecast():
                 updated_count += 1
                 print(f"  - Updated forecast for '{item['name']}' (SKU: {item['sku']}): {round(daily_burn_rate, 2)} units/day.")
         
-        print(f"\n✅ Forecast complete. Updated {updated_count} of {len(all_items)} items with new sales data.")
+        print(f"\nForecast complete. Updated {updated_count} of {len(all_items)} items with new sales data.")
 
     except Exception as e:
-        print(f"❌ An error occurred during the forecast process: {e}")
+        print(f"An error occurred during the forecast process: {e}")
     finally:
         client.close()
         print("--- Inventory Forecast Task Finished ---")

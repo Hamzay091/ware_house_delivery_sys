@@ -26,7 +26,7 @@ const sendLowStockNotification = async (item, recipientEmails) => {
     const mailOptions = {
         from: `"Apex Logistics System" <${process.env.EMAIL_USER}>`,
         to: recipientEmails.join(', '),
-        subject: `⚠️ Low Stock Alert: ${item.name}`,
+        subject: ` Low Stock Alert: ${item.name}`,
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6;">
                 <h2>Inventory Alert</h2>

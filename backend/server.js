@@ -27,8 +27,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch(err => console.error('❌ MongoDB Error:', err));
+  .then(() => console.log(' Connected to MongoDB'))
+  .catch(err => console.error(' MongoDB Error:', err));
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
     try {
@@ -103,4 +103,4 @@ app.use('/admin', require('./routes/adminRoutes'));
 app.use('/notifications', require('./routes/notificationRoutes')); 
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(` Server running on http://localhost:${PORT}`));
