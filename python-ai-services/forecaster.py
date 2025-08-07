@@ -1,13 +1,13 @@
 import os
-from pymongo import MongoClient, errors
+from pymongo import MongoClient
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-
+from bson.objectid import ObjectId 
 load_dotenv()
 
 def run_inventory_forecast():
    
-    print("--- Starting Robust Inventory Forecast Task (FINAL) ---")
+    print("--- Starting Robust Inventory Forecast Task (Corrected) ---")
     try:
         client = MongoClient(os.getenv('MONGO_URI'))
         db = client.get_database('warehouseDB')
@@ -22,13 +22,7 @@ def run_inventory_forecast():
     try:
         print("\nStep 1: Fetching all sales data from delivered orders...")
         
-        latest_delivery = deliveries_collection.find_one(sort=[('createdAt', -1)])
-        if not latest_delivery:
-            print("No deliveries found. Cannot run forecast.")
-            return
-
-        now_reference = latest_delivery['createdAt']
-        thirty_days_ago = now_reference - timedelta(days=30)
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
         
         sales_pipeline = [
             {'$match': {'status': 'Delivered', 'createdAt': {'$gte': thirty_days_ago}}},
@@ -37,8 +31,14 @@ def run_inventory_forecast():
         ]
         
         sales_results = list(deliveries_collection.aggregate(sales_pipeline))
+        
         sales_data = {result['_id']: result['totalSold'] for result in sales_results}
         
+        if not sales_data:
+            print("No delivered sales data found in the last 30 days. Cannot run forecast.")
+            client.close()
+            return
+            
         print(f"Found sales data for {len(sales_data)} unique items.")
 
         print("\nStep 2: Updating inventory items with forecast data...")
@@ -46,6 +46,7 @@ def run_inventory_forecast():
         all_items = list(items_collection.find({}))
         if not all_items:
             print("No items found in inventory.")
+            client.close()
             return
 
         updated_count = 0
@@ -53,13 +54,12 @@ def run_inventory_forecast():
             total_sold = sales_data.get(item['_id'], 0)
             daily_burn_rate = total_sold / 30.0
 
-           
             if item.get('availableStock', 0) <= 0:
                 days_of_stock_left = 0.0
             elif daily_burn_rate > 0:
                 days_of_stock_left = item.get('availableStock', 0) / daily_burn_rate
             else:
-                days_of_stock_left = float('inf')
+                days_of_stock_left = 9999 
 
             update_result = items_collection.update_one(
                 {'_id': item['_id']},
@@ -72,11 +72,12 @@ def run_inventory_forecast():
                 }}
             )
 
-            if update_result.modified_count > 0 and total_sold > 0:
+            if update_result.modified_count > 0:
                 updated_count += 1
-                print(f"  - Updated forecast for '{item['name']}' (SKU: {item['sku']}): {round(daily_burn_rate, 2)} units/day.")
+                if total_sold > 0:
+                    print(f"  - Updated forecast for '{item['name']}' (SKU: {item['sku']}): {round(daily_burn_rate, 2)} units/day.")
         
-        print(f"\nForecast complete. Updated {updated_count} of {len(all_items)} items with new sales data.")
+        print(f"\n Forecast complete. Updated {updated_count} of {len(all_items)} items.")
 
     except Exception as e:
         print(f"An error occurred during the forecast process: {e}")

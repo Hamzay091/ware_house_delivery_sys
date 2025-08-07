@@ -9,7 +9,13 @@ const itemSchema = new mongoose.Schema({
   availableStock: { type: Number, required: true, default: 0, min: 0 },
   totalStock: { type: Number, required: true, default: 0, min: 0 },
 
-  location: { type: String }
+  location: { type: String },
+
+  forecast: {
+    dailyBurnRate: { type: Number },
+    daysOfStockLeft: { type: Number },
+    lastUpdated: { type: Date }
+  }
 });
 
 itemSchema.index({ stockId: 1, sku: 1 }, { unique: true });

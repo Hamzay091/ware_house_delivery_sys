@@ -2,7 +2,7 @@
 <%- include('partials/navbar') %>
 
 <main>
-  <h2>Manager: Delivery Tracking Hub</h2>
+  <h2><%= locals.isAdminView ? 'Admin View: Delivery Tracking' : 'Manager: Delivery Tracking Hub' %></h2>
 
   <%- include('partials/_notifications') %>
 
@@ -14,7 +14,12 @@
     <a href="/inventory" class="btn btn-secondary">Manage Inventory</a>
     <a href="/deliveries/assign" class="btn btn-primary">+ Assign New Delivery</a>
     <a href="/delivery-reports" class="btn btn-secondary">Delivery Reports</a>
-    <a href="/view-messages" class="btn btn-secondary">View Contact Messages</a>
+    <a href="/view-messages" class="btn btn-secondary notification-button-wrapper">
+        View Contact Messages
+        <% if (locals.unreadMessageCount && unreadMessageCount > 0) { %>
+            <span class="notification-badge"><%= unreadMessageCount %></span>
+        <% } %>
+    </a>
   </div>
 
   <div class="table-container">

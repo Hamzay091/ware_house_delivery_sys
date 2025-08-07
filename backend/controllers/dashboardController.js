@@ -7,18 +7,15 @@ const Notification = require('../models/notification');
 exports.renderAdminDashboard = async (req, res) => {
     try {
         const notifications = await Notification.find({ userId: req.user._id, status: 'unread' }).sort({ createdAt: -1 });
+        const unreadMessageCount = await Contact.countDocuments({ status: 'New' });
+        const unreadNotificationCount = await Notification.countDocuments({ userId: req.user._id, status: 'unread' });
 
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
 
         const deliveryStats = await Delivery.aggregate([
             { $match: { createdAt: { $gte: startOfToday } } },
-            {
-                $group: {
-                    _id: { $hour: { date: "$createdAt", timezone: "Asia/Karachi" } },
-                    count: { $sum: 1 }
-                }
-            },
+            { $group: { _id: { $hour: { date: "$createdAt", timezone: "Asia/Karachi" } }, count: { $sum: 1 } } },
             { $sort: { _id: 1 } }
         ]);
 
@@ -29,20 +26,12 @@ exports.renderAdminDashboard = async (req, res) => {
             return `${i - 12} PM`;
         });
         const deliveryValues = Array(24).fill(0);
-        deliveryStats.forEach(stat => {
-            deliveryValues[stat._id] = stat.count;
-        });
-        
+        deliveryStats.forEach(stat => { deliveryValues[stat._id] = stat.count; });
 
         const stockStats = await Item.aggregate([
             { $lookup: { from: 'stocks', localField: 'stockId', foreignField: '_id', as: 'stock' } },
             { $unwind: { path: '$stock', preserveNullAndEmptyArrays: true } },
-            { 
-                $group: { 
-                    _id: { $ifNull: ['$stock.name', 'Uncategorized'] }, 
-                    totalQuantity: { $sum: '$totalStock' } 
-                } 
-            },
+            { $group: { _id: { $ifNull: ['$stock.name', 'Uncategorized'] }, totalQuantity: { $sum: '$totalStock' } } },
             { $sort: { totalQuantity: -1 } }
         ]);
         
@@ -61,17 +50,30 @@ exports.renderAdminDashboard = async (req, res) => {
             pending: await Delivery.countDocuments({ status: 'Pending' }) 
         };
         
-        res.render('dashboard-admin', { stats, chartDataJSON, notifications });
+        res.render('dashboard-admin', { 
+            stats, 
+            chartDataJSON, 
+            notifications, 
+            unreadMessageCount, 
+            unreadNotificationCount 
+        });
 
     } catch (error) {
         console.error("Error rendering admin dashboard:", error);
-        res.render('dashboard-admin', { stats: {}, chartDataJSON: '{}', notifications: [] });
+        res.render('dashboard-admin', { 
+            stats: {}, 
+            chartDataJSON: '{}', 
+            notifications: [], 
+            unreadMessageCount: 0, 
+            unreadNotificationCount: 0 
+        });
     }
 };
 
 exports.renderManagerDashboard = async (req, res) => {
     try {
         const notifications = await Notification.find({ userId: req.user._id, status: 'unread' }).sort({ createdAt: -1 });
+        const unreadMessageCount = await Contact.countDocuments({ status: 'New' });
 
         const deliveries = await Delivery.find()
             .sort({ updatedAt: -1 })
@@ -83,7 +85,7 @@ exports.renderManagerDashboard = async (req, res) => {
                     model: 'Stock'
                 }
             });
-        res.render('dashboard-manager', { deliveries, notifications });
+        res.render('dashboard-manager', { deliveries, notifications, unreadMessageCount });
     } catch (error) {
         console.error("Error fetching manager dashboard deliveries:", error);
         res.status(500).send("Error loading manager dashboard.");

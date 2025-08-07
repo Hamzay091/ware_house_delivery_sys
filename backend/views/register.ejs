@@ -2,7 +2,7 @@
 <%- include('partials/navbar') %>
 
 <main>
-  <form action="/register" method="POST">
+  <form id="registration-form" action="/register" method="POST">
     <h2>Create Your Account</h2>
     <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
       <div class="feedback-box error-box">
@@ -22,8 +22,18 @@
     <label for="password">Password</label>
     <input type="password" id="password" name="password" placeholder="Choose a strong password" required />
     
-    <label for="phone">Phone Number</label>
-    <input type="text" id="phone" name="phone" placeholder="(Optional)" />
+    <label for="localPhone">Phone Number</label>
+    <div class="phone-input-wrapper">
+        <select id="countryCode" name="countryCode" aria-label="Country Code">
+            <option value="+92">+92 (PK)</option>
+            <option value="+1">+1 (US)</option>
+            <option value="+44">+44 (UK)</option>
+            <option value="+91">+91 (IN)</option>
+            <option value="+971">+971 (AE)</option>
+        </select>
+        <input type="tel" id="localPhone" name="localPhone" placeholder="300 1234567" />
+    </div>
+    <input type="hidden" id="phone" name="phone" />
     
     <label for="socialLink">Social Media Profile Link</label>
     <input type="text" id="socialLink" name="socialLink" placeholder="(Optional)" />
@@ -46,5 +56,18 @@
     <button type="submit" class="btn btn-primary">Register</button>
   </form>
 </main>
+
+<script>
+    document.getElementById('registration-form').addEventListener('submit', function(event) {
+        const countryCode = document.getElementById('countryCode').value;
+        const localPhone = document.getElementById('localPhone').value;
+        const fullPhoneInput = document.getElementById('phone');
+
+        if (localPhone.trim() !== '') {
+            const cleanedLocalPhone = localPhone.replace(/^0+/, '').trim();
+            fullPhoneInput.value = countryCode + cleanedLocalPhone;
+        }
+    });
+</script>
 
 <%- include('partials/footer') %>

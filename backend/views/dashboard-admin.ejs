@@ -42,9 +42,14 @@
     <div class="card">
       <h3>Operations Hub</h3>
       <div class="hub-actions">
-        <a href="/manager-dashboard">Track Deliveries</a>
+        <a href="/admin/view-as/manager">Track Deliveries</a>
         <a href="/delivery-reports">Delivery Reports</a>
-        <a href="/view-messages" class="btn btn-secondary">View Contact Messages</a>
+        <a href="/view-messages" class="btn btn-secondary notification-button-wrapper">
+            View Contact Messages
+            <% if (locals.unreadMessageCount && unreadMessageCount > 0) { %>
+                <span class="notification-badge"><%= unreadMessageCount %></span>
+            <% } %>
+        </a>
       </div>
     </div>
   </div>

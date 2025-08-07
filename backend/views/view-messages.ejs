@@ -1,24 +1,60 @@
 <%- include('partials/header') %>
-<%- include('partials/navbar') %>
-<main>
-  <h2>Contact Form Submissions</h2>
-  <table>
-    <thead><tr><th>Date</th><th>From</th><th>Email</th><th>Message</th><th>Status</th></tr></thead>
-    <tbody>
-      <% if (messages.length > 0) { %>
-        <% messages.forEach(msg => { %>
-          <tr class="message-<%= msg.status.toLowerCase() %>">
-            <td><%= new Date(msg.createdAt).toLocaleString() %></td>
-            <td><%= msg.name %></td>
-            <td><a href="mailto:<%= msg.email %>"><%= msg.email %></a></td>
-            <td><%= msg.message %></td>
-            <td><%= msg.status %></td>
-          </tr>
-        <% }) %>
-      <% } else { %>
-        <tr><td colspan="5">There are no messages.</td></tr>
-      <% } %>
-    </tbody>
-  </table>
-</main>
-<%- include('partials/footer') %>
+  <%- include('partials/navbar') %>
+    <main>
+      <h2>Contact Form Submissions</h2>
+      <p style="text-align:center;">Review and manage all incoming messages from the public-facing contact form.</p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>From</th>
+              <th>Email</th>
+              <th>Message</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (messages.length> 0) { %>
+              <% messages.forEach(msg=> { %>
+                <tr class="message-<%= msg.status.toLowerCase() %>">
+                  <td>
+                    <%= new Date(msg.createdAt).toLocaleString() %>
+                  </td>
+                  <td>
+                    <%= msg.name %>
+                  </td>
+                  <td><a href="mailto:<%= msg.email %>">
+                      <%= msg.email %>
+                    </a></td>
+                  <td>
+                    <%= msg.message %>
+                  </td>
+                  <td>
+                    <span class="status-pill <%= msg.status.toLowerCase() %>">
+                      <%= msg.status %>
+                    </span>
+                  </td>
+                  <td>
+                    <% if (msg.status==='New' ) { %>
+                      <form action="/messages/read/<%= msg._id %>" method="POST" style="margin: 0;">
+                        <button type="submit" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">
+                          Mark as Read
+                        </button>
+                      </form>
+                      <% } %>
+                  </td>
+                </tr>
+                <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="6" style="text-align:center;">There are no messages.</td>
+                    </tr>
+                    <% } %>
+          </tbody>
+        </table>
+      </div>
+    </main>
+    <%- include('partials/footer') %>

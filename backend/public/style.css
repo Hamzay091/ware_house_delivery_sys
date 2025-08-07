@@ -3,46 +3,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 
 :root {
-  /* Fonts */
   --font-primary: 'Inter', sans-serif;
   --font-headings: 'Poppins', sans-serif;
 
-  /* New Color Palette */
   --color-primary: #a05436;
-  /* Terracotta Brown */
   --color-primary-hover: #8a482d;
-  /* Darker Terracotta */
   --color-secondary: #5f3b1e;
-  /* Rich Dark Brown */
   --color-accent: #cfa27f;
-  /* Sandy Brown */
   --color-dark: #1b0f0a;
-  /* Almost Black */
   --color-light-gray: #cbc8c7;
-  /* Light Gray */
-
-  /* UI Colors */
   --color-bg: #f9f8f7;
-  /* Lighter, warmer background */
   --color-surface: #ffffff;
   --color-border: #e4e2e0;
 
-  /* Text Colors */
   --color-text-primary: var(--color-dark);
   --color-text-secondary: #746862;
   --color-text-headings: var(--color-dark);
   --color-text-inverse: #ffffff;
 
-  /* Semantic Colors (Updated for Theme Cohesion) */
   --color-success: #4a6341;
-  /* Muted Professional Green */
   --color-success-hover: #3e5236;
-  /* Darker Muted Green */
   --color-danger: #c0392b;
   --color-warning: #f39c12;
   --color-info: #3498db;
 
-  /* Spacing & Shadows */
   --border-radius: 12px;
   --shadow-sm: 0 4px 6px -1px rgba(27, 15, 10, 0.05);
   --shadow-md: 0 10px 15px -3px rgba(27, 15, 10, 0.07);
@@ -907,4 +891,82 @@ body.sidebar-open #admin-sidebar {
   color: var(--color-warning);
   border-color: #feeccf;
   font-weight: bold;
+}
+
+/* 15. PROFESSIONAL PHONE INPUT STYLES */
+.phone-input-wrapper {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.phone-input-wrapper select,
+.phone-input-wrapper input {
+  margin-bottom: 0 !important;
+}
+
+.phone-input-wrapper select {
+  flex-shrink: 0;
+  width: auto;
+}
+
+.phone-input-wrapper input {
+  flex-grow: 1;
+  width: 100%;
+}
+
+/* 16. BUTTON NOTIFICATION STYLES (UPDATED) */
+.notification-button-wrapper {
+  position: relative;
+  overflow: visible;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 4px;
+  background-color: var(--color-danger);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: var(--font-primary);
+  border-radius: 50%;
+  border: 2px solid var(--color-surface);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 17. VIEW MESSAGES PAGE STYLES */
+.message-new {
+  background-color: var(--color-surface);
+  font-weight: 500;
+}
+
+.status-pill.new {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-color: rgba(160, 84, 54, 0.1);
+}
+
+/* 18. SIDEBAR NOTIFICATION STYLES */
+.sidebar-links a.notification-link-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-links a.notification-link-wrapper .notification-badge {
+  position: static;
+  top: auto;
+  right: auto;
+  min-width: 22px;
+  height: 22px;
+  font-size: 11px;
+  line-height: 1;
 }
