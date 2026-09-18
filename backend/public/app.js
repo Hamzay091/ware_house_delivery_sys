@@ -228,12 +228,23 @@
       return (styles.getPropertyValue(name) || fallback).trim();
     };
     return {
-      text: token('--text-muted', '#7d736d'),
-      grid: token('--border', '#e6e3e0'),
+      text: token('--text-muted', '#64748b'),
+      grid: token('--border', '#e2e8f0'),
       surface: token('--surface', '#ffffff'),
+      accent: token('--accent', '#4f46e5'),
+      // Categorical slots, in the fixed order the palette was validated in.
+      // Never cycle past the end — fold extra categories into "Other" instead.
       series: [1, 2, 3, 4, 5, 6, 7].map(function (n) {
-        return token('--chart-' + n, '#a05436');
-      })
+        return token('--chart-' + n, '#2a78d6');
+      }),
+      // Status tones are reserved for state and must match the pills, so a
+      // "Failed" bar and a "Failed" pill are never different colours.
+      status: {
+        ok: token('--ok', '#059669'),
+        warn: token('--warn', '#b45309'),
+        danger: token('--danger', '#dc2626'),
+        info: token('--info', '#0284c7')
+      }
     };
   };
 

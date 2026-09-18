@@ -185,8 +185,10 @@ document.addEventListener('DOMContentLoaded', () => {
         labels: data.trendLabels,
         datasets: [{
           label: 'Deliveries',
+          // One series, so it wears the brand accent rather than a
+          // categorical slot, and needs no legend — the card title names it.
           data: data.trendValues,
-          backgroundColor: theme.series[0],
+          backgroundColor: theme.accent,
           borderRadius: 4,
           maxBarThickness: 34
         }]
@@ -230,12 +232,13 @@ document.addEventListener('DOMContentLoaded', () => {
     showEmpty('stockChart', 'stockChartEmpty');
   }
 
-  // Pipeline by status — colours map to the same semantics as the pills.
+  // Pipeline by status. These are states, not categories, so they wear the
+  // reserved status tones — the same ones the status pills use.
   const statusColours = {
-    'Pending': theme.series[5] || theme.series[0],
-    'In Transit': theme.series[4] || theme.series[1],
-    'Delivered': theme.series[3] || theme.series[2],
-    'Failed': theme.series[6] || theme.series[0]
+    'Pending': theme.status.warn,
+    'In Transit': theme.status.info,
+    'Delivered': theme.status.ok,
+    'Failed': theme.status.danger
   };
   new Chart(document.getElementById('statusChart'), {
     type: 'bar',

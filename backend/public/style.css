@@ -26,38 +26,38 @@
   --font-display: 'Poppins', var(--font-sans);
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
-  /* Brand — warm terracotta */
-  --brand-50:  #fbf5f1;
-  --brand-100: #f4e5da;
-  --brand-200: #e8c9b4;
-  --brand-300: #d8a684;
-  --brand-400: #c07f56;
-  --brand-500: #a05436;
-  --brand-600: #8a482d;
-  --brand-700: #6e3a25;
-  --brand-800: #5f3b1e;
-  --brand-900: #3a1f11;
+  /* Brand - indigo */
+  --brand-50:  #eef2ff;
+  --brand-100: #e0e7ff;
+  --brand-200: #c7d2fe;
+  --brand-300: #a5b4fc;
+  --brand-400: #818cf8;
+  --brand-500: #6366f1;
+  --brand-600: #4f46e5;
+  --brand-700: #4338ca;
+  --brand-800: #3730a3;
+  --brand-900: #312e81;
 
-  /* Neutrals */
-  --gray-50:  #faf9f8;
-  --gray-100: #f3f1ef;
-  --gray-200: #e6e3e0;
-  --gray-300: #d3cecb;
-  --gray-400: #a8a09a;
-  --gray-500: #7d736d;
-  --gray-600: #5c534e;
-  --gray-700: #423b37;
-  --gray-800: #2a2522;
-  --gray-900: #1b0f0a;
+  /* Neutrals - slate */
+  --gray-50:  #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
 
   /* Semantic surfaces */
   --bg:             var(--gray-50);
   --bg-subtle:      var(--gray-100);
   --surface:        #ffffff;
   --surface-raised: #ffffff;
-  --surface-sunken: var(--gray-100);
+  --surface-sunken: var(--gray-50);
   --border:         var(--gray-200);
-  --border-strong:  #d6d1cc;
+  --border-strong:  var(--gray-300);
 
   /* Semantic text */
   --text:          var(--gray-900);
@@ -67,41 +67,44 @@
   --text-on-brand: #ffffff;
 
   /* Interactive */
-  --accent:       var(--brand-500);
-  --accent-hover: var(--brand-600);
+  --accent:       var(--brand-600);
+  --accent-hover: var(--brand-700);
   --accent-soft:  var(--brand-50);
-  --accent-ring:  rgba(160, 84, 54, 0.28);
+  --accent-ring:  rgba(79, 70, 229, 0.22);
 
-  /* Status — each has a solid tone, a soft surface and a border */
-  --ok:     #3f6b4a;  --ok-soft:     #eaf4ec;  --ok-border:     #bcdcc4;
-  --warn:   #9a6413;  --warn-soft:   #fdf3e2;  --warn-border:   #f0d6a6;
-  --danger: #a63028;  --danger-soft: #fdecea;  --danger-border: #f2c1bc;
-  --info:   #1f6390;  --info-soft:   #e9f3fa;  --info-border:   #b9dbf0;
+  /* Status - a solid tone, a soft surface and a border for each */
+  --ok:     #059669;  --ok-soft:     #ecfdf5;  --ok-border:     #a7f3d0;
+  --warn:   #b45309;  --warn-soft:   #fffbeb;  --warn-border:   #fde68a;
+  --danger: #dc2626;  --danger-soft: #fef2f2;  --danger-border: #fecaca;
+  --info:   #0284c7;  --info-soft:   #f0f9ff;  --info-border:   #bae6fd;
 
-  /* Chart palette — tuned to the warm brand, distinguishable in both themes */
-  --chart-1: #a05436;
-  --chart-2: #5f3b1e;
-  --chart-3: #c07f56;
-  --chart-4: #7d8c5c;
-  --chart-5: #3f6b7d;
-  --chart-6: #d8a684;
-  --chart-7: #8a6a8f;
+  /* Categorical chart series. Hue order is the CVD-safety mechanism, not
+     cosmetic: this sequence clears the adjacent-pair separation gates on both
+     surfaces. Three light-mode slots sit under 3:1, so charts using them keep
+     a visible legend and labels rather than relying on colour alone. */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-6: #008300;
+  --chart-7: #4a3aa7;
 
   /* Space scale */
-  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
-  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 14px; --sp-4: 20px;
+  --sp-5: 28px; --sp-6: 40px; --sp-7: 56px; --sp-8: 80px;
 
   /* Radii */
-  --r-sm: 8px;
-  --r-md: 12px;
-  --r-lg: 16px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
   --r-pill: 999px;
 
   /* Elevation */
-  --shadow-xs: 0 1px 2px rgba(27, 15, 10, 0.06);
-  --shadow-sm: 0 2px 4px rgba(27, 15, 10, 0.06), 0 1px 2px rgba(27, 15, 10, 0.04);
-  --shadow-md: 0 8px 20px -6px rgba(27, 15, 10, 0.12), 0 2px 6px rgba(27, 15, 10, 0.05);
-  --shadow-lg: 0 20px 40px -12px rgba(27, 15, 10, 0.20);
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 10px 24px -8px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 24px 48px -16px rgba(15, 23, 42, 0.18);
 
   /* Motion */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -110,91 +113,92 @@
 
   /* Layout */
   --shell-max: 1320px;
-  --topbar-h: 66px;
+  --topbar-h: 70px;
 
   color-scheme: light;
 }
 
-/* Dark theme — applied by the OS preference unless the user forced light,
-   or explicitly by the theme toggle. */
+/* Dark theme - applied by the OS preference unless the user forced light,
+   or explicitly by the theme toggle. The dark values are chosen for the dark
+   surface, not derived by flipping the light ones. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg:             #14100e;
-    --bg-subtle:      #1b1613;
-    --surface:        #1f1a17;
-    --surface-raised: #262019;
-    --surface-sunken: #171310;
-    --border:         #352c26;
-    --border-strong:  #493d35;
+    --bg:             #0b0d12;
+    --bg-subtle:      #111419;
+    --surface:        #16181d;
+    --surface-raised: #1c1f26;
+    --surface-sunken: #101318;
+    --border:         #2a2e37;
+    --border-strong:  #3a404b;
 
-    --text:          #f3eeea;
-    --text-muted:    #b3a69d;
-    --text-subtle:   #8a7c73;
-    --text-on-brand: #2a170e;
+    --text:          #e8eaf0;
+    --text-muted:    #9ba3b4;
+    --text-subtle:   #6b7383;
+    --text-on-brand: #0f172a;
 
-    --accent:       var(--brand-300);
-    --accent-hover: var(--brand-200);
-    --accent-soft:  #2b2019;
-    --accent-ring:  rgba(216, 166, 132, 0.30);
+    --accent:       var(--brand-400);
+    --accent-hover: var(--brand-300);
+    --accent-soft:  #1e2030;
+    --accent-ring:  rgba(129, 140, 248, 0.28);
 
-    --ok:     #8fc99f;  --ok-soft:     #1c2a20;  --ok-border:     #33513c;
-    --warn:   #e3b467;  --warn-soft:   #2c2317;  --warn-border:   #55432a;
-    --danger: #ef9b92;  --danger-soft: #2e1a18;  --danger-border: #5c322e;
-    --info:   #8cc3e8;  --info-soft:   #17232c;  --info-border:   #2d4757;
+    --ok:     #34d399;  --ok-soft:     #0c2a21;  --ok-border:     #14513c;
+    --warn:   #fbbf24;  --warn-soft:   #2a2113;  --warn-border:   #55411a;
+    --danger: #f87171;  --danger-soft: #2c1618;  --danger-border: #58262a;
+    --info:   #38bdf8;  --info-soft:   #0c232f;  --info-border:   #17455c;
 
-    --chart-1: #d8a684;
-    --chart-2: #b5c18f;
-    --chart-3: #e8c9b4;
-    --chart-4: #8fb3c9;
-    --chart-5: #c79ac3;
-    --chart-6: #e0b76b;
-    --chart-7: #9fcfae;
+    --chart-1: #3987e5;
+    --chart-2: #d95926;
+    --chart-3: #199e70;
+    --chart-4: #c98500;
+    --chart-5: #d55181;
+    --chart-6: #008300;
+    --chart-7: #9085e9;
 
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 8px 20px -6px rgba(0, 0, 0, 0.55);
-    --shadow-lg: 0 20px 40px -12px rgba(0, 0, 0, 0.7);
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 10px 24px -8px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 24px 48px -16px rgba(0, 0, 0, 0.75);
 
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg:             #14100e;
-  --bg-subtle:      #1b1613;
-  --surface:        #1f1a17;
-  --surface-raised: #262019;
-  --surface-sunken: #171310;
-  --border:         #352c26;
-  --border-strong:  #493d35;
+  --bg:             #0b0d12;
+  --bg-subtle:      #111419;
+  --surface:        #16181d;
+  --surface-raised: #1c1f26;
+  --surface-sunken: #101318;
+  --border:         #2a2e37;
+  --border-strong:  #3a404b;
 
-  --text:          #f3eeea;
-  --text-muted:    #b3a69d;
-  --text-subtle:   #8a7c73;
-  --text-on-brand: #2a170e;
+  --text:          #e8eaf0;
+  --text-muted:    #9ba3b4;
+  --text-subtle:   #6b7383;
+  --text-on-brand: #0f172a;
 
-  --accent:       var(--brand-300);
-  --accent-hover: var(--brand-200);
-  --accent-soft:  #2b2019;
-  --accent-ring:  rgba(216, 166, 132, 0.30);
+  --accent:       var(--brand-400);
+  --accent-hover: var(--brand-300);
+  --accent-soft:  #1e2030;
+  --accent-ring:  rgba(129, 140, 248, 0.28);
 
-  --ok:     #8fc99f;  --ok-soft:     #1c2a20;  --ok-border:     #33513c;
-  --warn:   #e3b467;  --warn-soft:   #2c2317;  --warn-border:   #55432a;
-  --danger: #ef9b92;  --danger-soft: #2e1a18;  --danger-border: #5c322e;
-  --info:   #8cc3e8;  --info-soft:   #17232c;  --info-border:   #2d4757;
+  --ok:     #34d399;  --ok-soft:     #0c2a21;  --ok-border:     #14513c;
+  --warn:   #fbbf24;  --warn-soft:   #2a2113;  --warn-border:   #55411a;
+  --danger: #f87171;  --danger-soft: #2c1618;  --danger-border: #58262a;
+  --info:   #38bdf8;  --info-soft:   #0c232f;  --info-border:   #17455c;
 
-  --chart-1: #d8a684;
-  --chart-2: #b5c18f;
-  --chart-3: #e8c9b4;
-  --chart-4: #8fb3c9;
-  --chart-5: #c79ac3;
-  --chart-6: #e0b76b;
-  --chart-7: #9fcfae;
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-6: #008300;
+  --chart-7: #9085e9;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 8px 20px -6px rgba(0, 0, 0, 0.55);
-  --shadow-lg: 0 20px 40px -12px rgba(0, 0, 0, 0.7);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 10px 24px -8px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 24px 48px -16px rgba(0, 0, 0, 0.75);
 
   color-scheme: dark;
 }
@@ -599,7 +603,7 @@ main.main--flush { max-width: 100%; padding: 0; }
 #sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(20, 12, 8, 0.55);
+  background: rgba(15, 23, 42, 0.55);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
   z-index: 900;
@@ -722,10 +726,10 @@ body.sidebar-open .sidebar { transform: translateX(0); }
 .btn-danger:hover:not(:disabled) { filter: brightness(0.92); color: #fff; }
 
 :root[data-theme='dark'] .btn-success,
-:root[data-theme='dark'] .btn-danger { color: #1b0f0a; }
+:root[data-theme='dark'] .btn-danger { color: #0f172a; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .btn-success,
-  :root:not([data-theme='light']) .btn-danger { color: #1b0f0a; }
+  :root:not([data-theme='light']) .btn-danger { color: #0f172a; }
 }
 
 .btn-ghost { background: transparent; color: var(--text-muted); border-color: transparent; }
@@ -790,7 +794,7 @@ textarea { resize: vertical; min-height: 90px; }
 
 select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237d736d' d='M1.4 0 6 4.6 10.6 0 12 1.4 6 7.4 0 1.4z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M1.4 0 6 4.6 10.6 0 12 1.4 6 7.4 0 1.4z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   padding-right: 38px;
@@ -997,6 +1001,9 @@ td.actions .btn-group { flex-wrap: nowrap; }
 
 .cell-title { font-weight: 600; color: var(--text); }
 .cell-sub { font-size: 0.8rem; color: var(--text-muted); }
+/* SKUs and other identifiers are single tokens — breaking them across lines
+   at every hyphen makes them unreadable. */
+td .mono { white-space: nowrap; }
 .item-list { list-style: none; margin: 0; padding: 0; font-size: 0.86rem; }
 .item-list li + li { margin-top: 2px; }
 .item-list .qty { font-weight: 600; color: var(--text); }
@@ -1168,8 +1175,8 @@ a.notice__msg:hover { color: var(--accent); }
 .hero {
   position: relative;
   background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(192, 127, 86, 0.30), transparent 70%),
-    linear-gradient(165deg, #241611 0%, #1b0f0a 55%, #2c1a11 100%);
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99, 102, 241, 0.35), transparent 70%),
+    linear-gradient(165deg, #1e293b 0%, #0f172a 55%, #1a1a3d 100%);
   color: #fff;
   padding: clamp(var(--sp-7), 10vw, 120px) var(--sp-5);
   text-align: center;
