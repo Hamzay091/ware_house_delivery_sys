@@ -1,5 +1,16 @@
 # Apex Logistics — AI Smart Warehouse & Delivery Management System
 
+[![Node](https://img.shields.io/badge/Node-%E2%89%A518-4f46e5?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express-4.x-4f46e5?logo=express&logoColor=white)](https://expressjs.com)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose%208-4f46e5?logo=mongodb&logoColor=white)](https://www.mongodb.com)
+[![EJS](https://img.shields.io/badge/EJS-server--rendered-4f46e5)](https://ejs.co)
+[![Python](https://img.shields.io/badge/Python-Flask%20AI%20service-4f46e5?logo=python&logoColor=white)](https://flask.palletsprojects.com)
+
+[![Unit tests](https://img.shields.io/badge/unit%20tests-10%20passing-059669)](backend/tests)
+[![Smoke tests](https://img.shields.io/badge/smoke%20checks-104%20passing-059669)](backend/scripts/smoke.js)
+[![Themes](https://img.shields.io/badge/themes-light%20%2B%20dark-0284c7)](backend/public/style.css)
+[![License](https://img.shields.io/badge/license-ISC-64748b)](#license)
+
 A full-stack warehouse and delivery platform: role-based dashboards, inventory
 with AI burn-rate forecasting, workload-balanced dispatch, route optimisation
 and invoicing — built on Node/Express with a Python AI sidecar.
@@ -201,3 +212,16 @@ python-ai-services/
   app.py           Flask API: geocoding + route optimisation
   forecaster.py    writes forecast data onto inventory items
 ```
+
+---
+
+## Credits
+
+Built on the original
+[AI-Smart-Warehouse-and-Delivery-Management-System](https://github.com/shabicreations033/AI-Smart-Warehouse-and-Delivery-Management-System)
+by [@shabicreations033](https://github.com/shabicreations033), which remains
+configured as the `upstream` remote.
+
+## License
+
+ISC — see the `license` field in [`backend/package.json`](backend/package.json).
