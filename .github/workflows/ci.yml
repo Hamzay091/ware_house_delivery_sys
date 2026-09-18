@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes the in-flight run redundant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22']
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # The smoke run starts a real mongod through mongodb-memory-server.
+      # Caching the download keeps each job from pulling ~100MB again.
+      - name: Cache MongoDB binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-v1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      # Boots the app against an in-memory MongoDB and walks every page and
+      # form across all three roles.
+      - name: Smoke tests
+        run: npm run smoke
+
+  lint:
+    name: Syntax check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Parses every source file and every EJS template without running them,
+      # so a typo in a rarely-visited view fails here rather than in production.
+      - name: Check JavaScript parses
+        run: |
+          find backend -name '*.js' \
+            -not -path '*/node_modules/*' \
+            -print0 | xargs -0 -n1 node --check
+
+      - name: Check EJS templates compile
+        working-directory: backend
+        run: |
+          npm ci --omit=dev --ignore-scripts
+          node -e "
+            const ejs = require('ejs');
+            const fs = require('fs');
+            const path = require('path');
+            const dir = 'views';
+            let failed = 0;
+            const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).forEach(e => {
+              const p = path.join(d, e.name);
+              if (e.isDirectory()) return walk(p);
+              if (!p.endsWith('.ejs')) return;
+              try {
+                ejs.compile(fs.readFileSync(p, 'utf8'), { filename: p });
+              } catch (err) {
+                failed++;
+                console.error('✗ ' + p + ': ' + err.message);
+              }
+            });
+            walk(dir);
+            if (failed) { console.error(failed + ' template(s) failed to compile'); process.exit(1); }
+            console.log('All EJS templates compile.');
+          "

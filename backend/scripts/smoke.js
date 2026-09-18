@@ -32,7 +32,12 @@ function createClient(base) {
         Array.from(cookies.entries()).map(([k, v]) => `${k}=${v}`).join('; ');
 
     const absorb = (res) => {
-        const raw = res.headers.getSetCookie ? res.headers.getSetCookie() : [];
+        // getSetCookie() only exists on newer Node. The app sets a single
+        // cookie, so reading the raw header is a safe fallback here — it would
+        // not be if several Set-Cookie headers were joined together.
+        const raw = typeof res.headers.getSetCookie === 'function'
+            ? res.headers.getSetCookie()
+            : (res.headers.get('set-cookie') ? [res.headers.get('set-cookie')] : []);
         raw.forEach((line) => {
             const [pair] = line.split(';');
             const idx = pair.indexOf('=');

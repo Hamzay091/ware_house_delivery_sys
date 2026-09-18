@@ -6,8 +6,9 @@
 [![EJS](https://img.shields.io/badge/EJS-server--rendered-4f46e5)](https://ejs.co)
 [![Python](https://img.shields.io/badge/Python-Flask%20AI%20service-4f46e5?logo=python&logoColor=white)](https://flask.palletsprojects.com)
 
-[![Unit tests](https://img.shields.io/badge/unit%20tests-10%20passing-059669)](backend/tests)
-[![Smoke tests](https://img.shields.io/badge/smoke%20checks-104%20passing-059669)](backend/scripts/smoke.js)
+[![CI](https://github.com/Hamzay091/ware_house_delivery_sys/actions/workflows/ci.yml/badge.svg)](https://github.com/Hamzay091/ware_house_delivery_sys/actions/workflows/ci.yml)
+[![Unit tests](https://img.shields.io/badge/unit%20tests-10-059669)](backend/tests)
+[![Smoke checks](https://img.shields.io/badge/smoke%20checks-104-059669)](backend/scripts/smoke.js)
 [![Themes](https://img.shields.io/badge/themes-light%20%2B%20dark-0284c7)](backend/public/style.css)
 [![License](https://img.shields.io/badge/license-ISC-64748b)](#license)
 
@@ -192,6 +193,7 @@ python forecaster.py
 | `npm run seed` | Seeds the configured database (refuses if it has users). |
 | `npm run seed:force` | Wipes and reseeds. |
 | `npm test` | Runs the unit tests for the query and CSV helpers. |
+| `npm run smoke` | End-to-end: boots the app on an in-memory database and walks every page and form across all three roles. |
 
 ---
 
@@ -212,6 +214,20 @@ python-ai-services/
   app.py           Flask API: geocoding + route optimisation
   forecaster.py    writes forecast data onto inventory items
 ```
+
+---
+
+## Continuous integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push to
+`main`, on every pull request, and on demand:
+
+- **Tests** on Node 18, 20 and 22 — `npm test` then `npm run smoke`. The smoke
+  job starts a real `mongod` through `mongodb-memory-server`, so it exercises
+  the actual database layer rather than mocks. The binary is cached between runs.
+- **Syntax check** — every `.js` file is parsed with `node --check`, and every
+  EJS template is compiled without rendering, so a typo in a rarely-visited view
+  fails in CI instead of in front of a user.
 
 ---
 
