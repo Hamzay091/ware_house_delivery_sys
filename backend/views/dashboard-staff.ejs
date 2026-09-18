@@ -1,56 +1,137 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
 
-<main>
-  <h2>My Assigned Deliveries</h2>
-  
-  <% if (deliveries.length > 0) { %>
-    <div class="dashboard">
-      <% deliveries.forEach(delivery => { %>
-        <div class="card">
-          <h3>Delivery to: <%= delivery.customerAddress %></h3>
-          
-          <p><strong>Items to Deliver:</strong></p>
-          <ul style="padding-left: 20px; margin-bottom: 20px;">
+<main id="main-content">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1 style="font-size: 1.75rem;">My deliveries</h1>
+      <p>Update each run as you go — the warehouse sees it straight away.</p>
+    </div>
+  </div>
+
+  <div class="stats mb-5">
+    <div class="stat">
+      <div class="stat__icon stat__icon--warn"><i class="fa-solid fa-clock" aria-hidden="true"></i></div>
+      <div>
+        <div class="stat__label">Pending</div>
+        <div class="stat__value"><%= statusCounts.Pending %></div>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat__icon stat__icon--info"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i></div>
+      <div>
+        <div class="stat__label">In transit</div>
+        <div class="stat__value"><%= statusCounts['In Transit'] %></div>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat__icon stat__icon--ok"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
+      <div>
+        <div class="stat__label">Delivered</div>
+        <div class="stat__value"><%= statusCounts.Delivered %></div>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat__icon stat__icon--danger"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i></div>
+      <div>
+        <div class="stat__label">Failed</div>
+        <div class="stat__value"><%= statusCounts.Failed %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="btn-group">
+      <a class="btn btn-sm <%= activeFilter === 'open' ? 'btn-primary' : 'btn-secondary' %>"
+         href="/delivery-staff-dashboard">Open runs</a>
+      <a class="btn btn-sm <%= activeFilter === 'Delivered' ? 'btn-primary' : 'btn-secondary' %>"
+         href="/delivery-staff-dashboard?status=Delivered">Delivered</a>
+      <a class="btn btn-sm <%= activeFilter === 'Failed' ? 'btn-primary' : 'btn-secondary' %>"
+         href="/delivery-staff-dashboard?status=Failed">Failed</a>
+      <a class="btn btn-sm <%= activeFilter === 'all' ? 'btn-primary' : 'btn-secondary' %>"
+         href="/delivery-staff-dashboard?status=all">All</a>
+    </div>
+  </div>
+
+  <% if (deliveries.length === 0) { %>
+    <div class="card">
+      <div class="empty">
+        <div class="empty__icon"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i></div>
+        <div class="empty__title">Nothing on your list</div>
+        <p>You have no deliveries in this view right now.</p>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="grid">
+      <% deliveries.forEach(delivery => {
+           const isClosed = delivery.status === 'Delivered' || delivery.status === 'Failed';
+      %>
+        <article class="card">
+          <div class="card__header">
+            <h3 style="font-size: 1rem;"><%= delivery.customerAddress %></h3>
+            <span class="pill <%= delivery.status.toLowerCase().replace(' ', '-') %>"><%= delivery.status %></span>
+          </div>
+
+          <h4 style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">
+            Items to deliver
+          </h4>
+          <ul class="item-list mt-4" style="font-size: 0.92rem;">
             <% if (delivery.items && delivery.items.length > 0) { %>
-              <% delivery.items.forEach(item => { %>
+              <% delivery.items.forEach(line => { %>
                 <li>
-                  <%= item.quantity %>x
-                  <% if (item.itemId && item.itemId.name) { %>
-                    <%= item.itemId.name %> (<%= item.itemId.sku %>)
+                  <span class="qty"><%= line.quantity %>&times;</span>
+                  <% if (line.itemId) { %>
+                    <%= line.itemId.name %> <span class="cell-sub">(<%= line.itemId.sku %>)</span>
                   <% } else { %>
-                    <span style="color: var(--color-danger);"><em>(Item Details Missing)</em></span>
+                    <em class="text-danger">item details missing</em>
                   <% } %>
                 </li>
               <% }) %>
             <% } else { %>
-              <li>No items listed.</li>
+              <li class="text-muted">No items listed.</li>
             <% } %>
           </ul>
-          
-          <div style="margin-bottom: 20px;">
-            <strong>Current Status:</strong> 
-            <span class="status-pill <%= delivery.status.toLowerCase().replace(' ', '-') %>">
-              <%= delivery.status %>
-            </span>
-          </div>
 
-     
-          <form action="/deliveries/update-status/<%= delivery._id %>" method="POST">
-            <label for="status-<%= delivery._id %>">Update Status:</label>
-            <select name="status" id="status-<%= delivery._id %>" required>
-              <option value="In Transit" <%= delivery.status === 'In Transit' ? 'selected' : '' %>>In Transit</option>
-              <option value="Delivered" <%= delivery.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-              <option value="Failed" <%= delivery.status === 'Failed' ? 'selected' : '' %>>Failed</option>
-            </select>
-            <button type="submit" class="btn btn-primary">Update</button>
-          </form>
-        </div>
+          <% if (delivery.statusHistory && delivery.statusHistory.length > 0) { %>
+            <details class="mt-5">
+              <summary style="cursor: pointer; font-size: 0.85rem; color: var(--text-muted);">
+                History (<%= delivery.statusHistory.length %>)
+              </summary>
+              <ul class="timeline mt-4">
+                <% delivery.statusHistory.slice().reverse().forEach(entry => { %>
+                  <li>
+                    <div class="timeline__label"><%= entry.status %></div>
+                    <div class="timeline__time">
+                      <%= new Date(entry.changedAt).toLocaleString() %><%= entry.changedBy ? ' · ' + entry.changedBy : '' %>
+                    </div>
+                  </li>
+                <% }) %>
+              </ul>
+            </details>
+          <% } %>
+
+          <% if (isClosed) { %>
+            <p class="mt-5 text-muted" style="font-size: 0.88rem;">
+              <i class="fa-solid fa-lock" aria-hidden="true"></i>
+              This run is closed. Ask a manager if it needs reopening.
+            </p>
+          <% } else { %>
+            <form action="/deliveries/update-status/<%= delivery._id %>" method="POST" class="mt-5"
+                  data-confirm="Update this delivery's status?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <div class="field" style="margin-bottom: var(--sp-3);">
+                <label for="status-<%= delivery._id %>">Update status</label>
+                <select name="status" id="status-<%= delivery._id %>" required>
+                  <option value="In Transit" <%= delivery.status === 'In Transit' ? 'selected' : '' %>>In transit</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Failed">Failed</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Save update</button>
+            </form>
+          <% } %>
+        </article>
       <% }) %>
-    </div>
-  <% } else { %>
-    <div class="card" style="text-align: center;">
-      <p>You have no deliveries assigned to you at the moment.</p>
     </div>
   <% } %>
 </main>

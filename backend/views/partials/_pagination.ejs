@@ -1,0 +1,55 @@
+<%
+  // Expects `pagination` = { page, pages, total, limit, baseQuery } where
+  // baseQuery is the current query string without `page` (may be empty).
+  const p = pagination || {};
+  const pages = p.pages || 1;
+  const page = p.page || 1;
+  const total = p.total || 0;
+  const limit = p.limit || 0;
+  const q = p.baseQuery ? p.baseQuery + '&' : '';
+  const href = (n) => '?' + q + 'page=' + n;
+
+  const first = total === 0 ? 0 : (page - 1) * limit + 1;
+  const last = Math.min(page * limit, total);
+
+  // Show a window of pages around the current one, always including 1 and last.
+  const window_ = [];
+  const push = (n) => { if (!window_.includes(n) && n >= 1 && n <= pages) window_.push(n); };
+  push(1);
+  for (let n = page - 2; n <= page + 2; n++) push(n);
+  push(pages);
+  window_.sort((a, b) => a - b);
+%>
+<% if (total > 0) { %>
+  <div class="pagination">
+    <div class="pagination__info">
+      Showing <strong><%= first %></strong>–<strong><%= last %></strong> of <strong><%= total %></strong>
+    </div>
+    <% if (pages > 1) { %>
+      <nav class="pagination__pages" aria-label="Pagination">
+        <% if (page > 1) { %>
+          <a href="<%= href(page - 1) %>" aria-label="Previous page"><i class="fa-solid fa-chevron-left"></i></a>
+        <% } else { %>
+          <span class="is-disabled" aria-hidden="true"><i class="fa-solid fa-chevron-left"></i></span>
+        <% } %>
+
+        <% let prev = 0; %>
+        <% window_.forEach(n => { %>
+          <% if (prev && n - prev > 1) { %><span class="is-disabled">…</span><% } %>
+          <% if (n === page) { %>
+            <span class="is-current" aria-current="page"><%= n %></span>
+          <% } else { %>
+            <a href="<%= href(n) %>"><%= n %></a>
+          <% } %>
+          <% prev = n; %>
+        <% }) %>
+
+        <% if (page < pages) { %>
+          <a href="<%= href(page + 1) %>" aria-label="Next page"><i class="fa-solid fa-chevron-right"></i></a>
+        <% } else { %>
+          <span class="is-disabled" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+        <% } %>
+      </nav>
+    <% } %>
+  </div>
+<% } %>

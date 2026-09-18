@@ -1,10 +1,18 @@
 const express = require('express');
-const router = express.Router();
-const deliveryController = require('../controllers/deliveryController'); 
-const { isAuthenticated, isManagerOrAdmin, isDeliveryStaff } = require('../middleware/authMiddleware');
 
-router.get('/assign', isAuthenticated, isManagerOrAdmin, deliveryController.renderAssignForm);
-router.post('/assign', isAuthenticated, isManagerOrAdmin, deliveryController.createDelivery);
-router.post('/update-status/:id', isAuthenticated, isDeliveryStaff, deliveryController.updateDeliveryStatus);
+const deliveryController = require('../controllers/deliveryController');
+const { isManagerOrAdmin, requireRole } = require('../middleware/authMiddleware');
+
+const router = express.Router();
+
+router.get('/assign', isManagerOrAdmin, deliveryController.renderAssignForm);
+router.post('/assign', isManagerOrAdmin, deliveryController.createDelivery);
+
+// Staff update their own deliveries; the controller enforces ownership.
+router.post(
+    '/update-status/:id',
+    requireRole('DeliveryStaff', 'Manager', 'Admin'),
+    deliveryController.updateDeliveryStatus
+);
 
 module.exports = router;

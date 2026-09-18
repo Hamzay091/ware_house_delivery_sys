@@ -1,8 +1,13 @@
 const express = require('express');
-const router = express.Router();
-const contactController = require('../controllers/contactController');
-const { isAuthenticated, isManagerOrAdmin } = require('../middleware/authMiddleware');
 
-router.post('/read/:id', isAuthenticated, isManagerOrAdmin, contactController.markMessageAsRead);
+const contactController = require('../controllers/contactController');
+const { isManagerOrAdmin } = require('../middleware/authMiddleware');
+
+const router = express.Router();
+
+router.use(isManagerOrAdmin);
+
+router.post('/read/:id', contactController.markMessageAsRead);
+router.post('/read-all', contactController.markAllAsRead);
 
 module.exports = router;

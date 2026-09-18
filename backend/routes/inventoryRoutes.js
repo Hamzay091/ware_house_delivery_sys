@@ -1,13 +1,21 @@
 const express = require('express');
-const router = express.Router();
-const inventoryController = require('../controllers/inventoryController'); 
-const { isAuthenticated, isManagerOrAdmin } = require('../middleware/authMiddleware'); 
 
-router.get('/', isAuthenticated, isManagerOrAdmin, inventoryController.getAllItems);
-router.get('/add', isAuthenticated, isManagerOrAdmin, inventoryController.renderAddItemForm);
-router.post('/add', isAuthenticated, isManagerOrAdmin, inventoryController.createItem);
-router.get('/edit/:id', isAuthenticated, isManagerOrAdmin, inventoryController.renderEditItemForm);
-router.post('/edit/:id', isAuthenticated, isManagerOrAdmin, inventoryController.updateItem);
-router.get('/delete/:id', isAuthenticated, isManagerOrAdmin, inventoryController.deleteItem);
+const inventoryController = require('../controllers/inventoryController');
+const { isManagerOrAdmin } = require('../middleware/authMiddleware');
+
+const router = express.Router();
+
+router.use(isManagerOrAdmin);
+
+router.get('/', inventoryController.getAllItems);
+router.get('/export.csv', inventoryController.exportItems);
+router.get('/add', inventoryController.renderAddItemForm);
+router.post('/add', inventoryController.createItem);
+router.get('/edit/:id', inventoryController.renderEditItemForm);
+router.post('/edit/:id', inventoryController.updateItem);
+
+// Deleting used to be a GET link, so any crawler, link prefetcher or image
+// tag pointing at the URL could remove an item without a form submission.
+router.post('/delete/:id', inventoryController.deleteItem);
 
 module.exports = router;

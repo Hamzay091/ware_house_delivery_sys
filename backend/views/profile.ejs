@@ -1,24 +1,73 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
+<%
+  const initials = (user.name || '?').trim().split(/\s+/).slice(0, 2)
+    .map(part => part[0].toUpperCase()).join('');
+  const roleLabel = user.role === 'DeliveryStaff' ? 'Delivery staff' : user.role;
+%>
 
-<main>
-  <div style="max-width: 600px; margin: auto;">
-    <h2>My Profile</h2>
-    <div class="card">
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <p><strong>Name:</strong> <%= user.name %></p>
-        <p><strong>Email:</strong> <%= user.email %></p>
-        <p><strong>Role:</strong> <%= user.role %></p>
-        <p><strong>Phone:</strong> <%= user.phone || 'Not provided' %></p>
-        <p><strong>Gender:</strong> <%= user.gender || 'Not provided' %></p>
-        <p><strong>Social Link:</strong> <%= user.socialLink ? `<a href="${user.socialLink}" target="_blank">${user.socialLink}</a>` : 'Not provided' %></p>
+<main id="main-content">
+  <div style="max-width: 680px; margin: 0 auto;">
+    <div class="page-head">
+      <div class="page-head__text">
+        <h1 style="font-size: 1.75rem;">My profile</h1>
       </div>
-      
-      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--color-border);">
-      
-      <div style="display: flex; gap: 15px;">
-        <a href="/users/profile/edit" class="btn btn-primary" style="flex: 1;">Edit Profile</a>
-        <a href="/users/profile/change-password" class="btn btn-secondary" style="flex: 1;">Change Password</a>
+    </div>
+
+    <div class="card">
+      <div style="display: flex; align-items: center; gap: var(--sp-4); margin-bottom: var(--sp-5);">
+        <span class="avatar" style="width: 56px; height: 56px; font-size: 1.15rem;" aria-hidden="true">
+          <%= initials %>
+        </span>
+        <div>
+          <div style="font-family: var(--font-display); font-weight: 600; font-size: 1.15rem;">
+            <%= user.name %>
+          </div>
+          <span class="pill pill--plain"><%= roleLabel %></span>
+        </div>
+      </div>
+
+      <dl style="display: grid; gap: var(--sp-4); margin: 0;">
+        <div>
+          <dt class="stat__label">Email</dt>
+          <dd style="margin: 0;"><%= user.email %></dd>
+        </div>
+        <div>
+          <dt class="stat__label">Phone</dt>
+          <dd style="margin: 0;"><%= user.phone || 'Not provided' %></dd>
+        </div>
+        <div>
+          <dt class="stat__label">Gender</dt>
+          <dd style="margin: 0;"><%= user.gender || 'Not provided' %></dd>
+        </div>
+        <div>
+          <dt class="stat__label">Social profile</dt>
+          <dd style="margin: 0;">
+            <% if (user.socialLink) { %>
+              <a href="<%= user.socialLink %>" target="_blank" rel="noopener noreferrer">
+                <%= user.socialLink %>
+                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.75em;" aria-hidden="true"></i>
+              </a>
+            <% } else { %>
+              Not provided
+            <% } %>
+          </dd>
+        </div>
+        <div>
+          <dt class="stat__label">Sign-in method</dt>
+          <dd style="margin: 0;"><%= user.googleId ? 'Google' : 'Email and password' %></dd>
+        </div>
+      </dl>
+
+      <hr />
+
+      <div class="btn-group" style="width: 100%;">
+        <a href="/users/profile/edit" class="btn btn-primary" style="flex: 1;">Edit profile</a>
+        <% if (!user.googleId) { %>
+          <a href="/users/profile/change-password" class="btn btn-secondary" style="flex: 1;">
+            Change password
+          </a>
+        <% } %>
       </div>
     </div>
   </div>

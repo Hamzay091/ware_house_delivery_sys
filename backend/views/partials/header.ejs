@@ -3,8 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Apex Logistics | Smart Warehouse System</title>
-  <link rel="stylesheet" href="/style.css" />
+  <title><%= typeof title !== 'undefined' && title ? title + ' · Apex Logistics' : 'Apex Logistics · Smart Warehouse & Delivery Management' %></title>
+  <meta name="description" content="<%= typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : 'Apex Logistics — AI-assisted warehouse inventory, delivery dispatch and billing in one system.' %>" />
+  <meta name="theme-color" content="#a05436" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+  <script nonce="<%= cspNonce %>">
+    // Applied before first paint so a dark-theme reload never flashes white.
+    (function () {
+      try {
+        var stored = localStorage.getItem('apex-theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (e) { /* storage blocked — fall back to the OS preference */ }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="/style.css" />
+  <script src="/app.js" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>

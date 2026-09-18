@@ -1,77 +1,119 @@
 <%- include('partials/header') %>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>#map { height: 450px; border-radius: 12px; margin-top: 20px; z-index: 1; }</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
 <%- include('partials/navbar') %>
 
-<div id="route-data-provider" data-route='<%- routeJSON %>' style="display: none;"></div>
+<div id="route-data-provider" data-route='<%- routeJSON %>' hidden></div>
 
-<main>
-  <h2>AI-Optimized Delivery Route</h2>
-  <div class="dashboard">
-    <div class="card" style="flex: 1;">
-      <h3>Delivery Details</h3>
-      <p><strong>Destination:</strong> <%= delivery.customerAddress %></p>
-      <p><strong>Assigned To:</strong> <%= delivery.assignedTo %></p>
-      <p><strong>Items:</strong></p>
-      <ul>
-        <% delivery.items.forEach(item => { %>
-          <li>
-            <%= item.quantity %>x 
-            <% if (item.itemId) { %>
-              <%= item.itemId.name %> (<%= item.itemId.sku %>)
-            <% } else { %>
-              <span style="color: #e53e3e; font-style: italic;">(Item has been deleted)</span>
-            <% } %>
-          </li>
-        <% }) %>
-      </ul>
+<main id="main-content">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1 style="font-size: 1.75rem;">Optimised route</h1>
+      <p>Stops ordered by travel distance from the warehouse.</p>
     </div>
-    <div class="card" style="flex: 2;">
-      <h3>Optimal Stop Order</h3>
+    <div class="page-head__actions">
+      <a class="btn btn-secondary" href="/manager-dashboard">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to dispatch
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid--wide-left">
+    <div class="card">
+      <div class="card__header"><h3>Map</h3></div>
       <div id="map"></div>
+      <div id="map-error" class="alert alert--error mt-4" hidden>
+        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+        <p>The map could not be rendered from the route data returned by the service.</p>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="card__header"><h3>Delivery</h3></div>
+        <p style="color: var(--text);"><strong><%= delivery.customerAddress %></strong></p>
+        <p class="cell-sub">
+          Assigned to <%= delivery.assignedTo %> ·
+          <span class="pill <%= delivery.status.toLowerCase().replace(' ', '-') %>"><%= delivery.status %></span>
+        </p>
+
+        <h4 class="mt-5" style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">
+          Items
+        </h4>
+        <ul class="item-list mt-4" style="font-size: 0.92rem;">
+          <% delivery.items.forEach(line => { %>
+            <li>
+              <span class="qty"><%= line.quantity %>&times;</span>
+              <% if (line.itemId) { %>
+                <%= line.itemId.name %> <span class="cell-sub">(<%= line.itemId.sku %>)</span>
+              <% } else { %>
+                <em class="text-danger">deleted item</em>
+              <% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card__header"><h3>Stop order</h3></div>
+        <ol class="route-steps">
+          <% route.forEach(stop => { %>
+            <li><%= stop.address %></li>
+          <% }) %>
+        </ol>
+      </div>
     </div>
   </div>
 </main>
 
-<script>
+<script nonce="<%= cspNonce %>">
 document.addEventListener('DOMContentLoaded', () => {
-    try {
-        const dataProvider = document.getElementById('route-data-provider');
-        if (!dataProvider) { return console.error("Data provider div not found."); }
+  const provider = document.getElementById('route-data-provider');
+  const mapEl = document.getElementById('map');
+  const errorEl = document.getElementById('map-error');
+  if (!provider || !mapEl) return;
 
-        const routeDataString = dataProvider.dataset.route;
-        if (!routeDataString) { return console.error("No route data found in data attribute."); }
+  const showError = (message) => {
+    mapEl.hidden = true;
+    errorEl.hidden = false;
+    console.error(message);
+  };
 
-        const routeData = JSON.parse(routeDataString);
-        
-        if (!routeData || routeData.length === 0 || !routeData[0].coords) {
-            document.getElementById('map').innerHTML = '<p class="error-box">Could not render map: Invalid route data received from AI service.</p>';
-            return console.error("Parsed route data is empty or invalid.", routeData);
-        }
+  if (typeof L === 'undefined') return showError('Leaflet failed to load.');
 
-        const map = L.map('map').setView(routeData[0].coords, 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+  let route;
+  try {
+    route = JSON.parse(provider.dataset.route);
+  } catch (e) {
+    return showError('Could not parse route data: ' + e.message);
+  }
 
-        const latLngs = [];
-        routeData.forEach((stop, index) => {
-            if (stop.coords) {
-                latLngs.push(stop.coords);
-                L.marker(stop.coords).addTo(map)
-                    .bindPopup(`<b>Stop ${index + 1}:</b><br>${stop.address}`);
-            }
-        });
+  const stops = (route || []).filter(stop => Array.isArray(stop.coords) && stop.coords.length === 2);
+  if (stops.length === 0) return showError('No stop in the route had usable coordinates.');
 
-        if (latLngs.length > 0) {
-            const polyline = L.polyline(latLngs, {color: '#4299e1', weight: 5}).addTo(map);
-            map.fitBounds(polyline.getBounds().pad(0.1));
-        }
-    } catch (e) {
-        console.error("A critical error occurred while rendering the map:", e);
-        document.getElementById('map').innerHTML = '<p class="error-box">A JavaScript error prevented the map from loading. Please check the console.</p>';
-    }
+  const map = L.map('map').setView(stops[0].coords, 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  const points = [];
+  stops.forEach((stop, index) => {
+    points.push(stop.coords);
+    L.marker(stop.coords)
+      .addTo(map)
+      .bindPopup('<strong>Stop ' + (index + 1) + '</strong><br>' + stop.address);
+  });
+
+  if (points.length > 1) {
+    const line = L.polyline(points, {
+      color: getComputedStyle(document.documentElement).getPropertyValue('--chart-1').trim() || '#a05436',
+      weight: 4
+    }).addTo(map);
+    map.fitBounds(line.getBounds().pad(0.15));
+  }
 });
 </script>
 

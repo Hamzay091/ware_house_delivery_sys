@@ -1,197 +1,267 @@
 <%- include('partials/header') %>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <%- include('partials/navbar') %>
 
-<div id="chart-data-provider" data-chart='<%- chartDataJSON %>' style="display: none;"></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" defer></script>
+<div id="chart-data-provider" data-chart='<%- chartDataJSON %>' hidden></div>
 
-<main>
-  <h2>Admin Control Panel</h2>
+<main id="main-content">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1 style="font-size: 1.75rem;">Admin control panel</h1>
+      <p>A live view of stock, dispatch and billing across the whole operation.</p>
+    </div>
+    <div class="page-head__actions">
+      <a class="btn btn-secondary" href="/users/manage">
+        <i class="fa-solid fa-users-gear" aria-hidden="true"></i> Manage users
+      </a>
+      <a class="btn btn-primary" href="/deliveries/assign">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i> Assign delivery
+      </a>
+    </div>
+  </div>
 
   <%- include('partials/_notifications') %>
 
-  <div class="stats-grid">
-    <div class="card stat-card"><h3>Total Users</h3><p><%= stats.users %></p></div>
-    <div class="card stat-card"><h3>Warehouse Items</h3><p><%= stats.items %></p></div>
-    <div class="card stat-card"><h3>Total Deliveries</h3><p><%= stats.deliveries %></p></div>
-    <div class="card stat-card"><h3>Pending Deliveries</h3><p><%= stats.pending %></p></div>
-  </div>
-  
-  <div class="dashboard" style="margin-top: 40px; grid-template-columns: 2fr 1fr;">
-    <div class="card">
-      <h3>Today's Deliveries (By Hour)</h3>
-      <canvas id="deliveryChart"></canvas>
-      <div id="deliveryChartError" class="feedback-box info-box" style="display: none; margin-top: 20px;"></div>
-    </div>
-    <div class="card">
-      <h3>Stock Distribution</h3>
-      <div style="max-width: 320px; margin: auto;">
-        <canvas id="stockChart"></canvas>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat__icon stat__icon--info"><i class="fa-solid fa-users" aria-hidden="true"></i></div>
+      <div>
+        <div class="stat__label">Users</div>
+        <div class="stat__value"><%= stats.users %></div>
       </div>
-      <div id="stockChartError" class="feedback-box info-box" style="display: none; margin-top: 20px;"></div>
+    </div>
+
+    <div class="stat">
+      <div class="stat__icon"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i></div>
+      <div>
+        <div class="stat__label">Warehouse items</div>
+        <div class="stat__value"><%= stats.items %></div>
+        <div class="stat__meta">
+          <% if (stats.lowStock > 0 || stats.outOfStock > 0) { %>
+            <%= stats.lowStock %> low · <%= stats.outOfStock %> out
+          <% } else { %>
+            All above threshold
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat__icon stat__icon--warn"><i class="fa-solid fa-clock" aria-hidden="true"></i></div>
+      <div>
+        <div class="stat__label">Pending deliveries</div>
+        <div class="stat__value"><%= stats.pending %></div>
+        <div class="stat__meta"><%= stats.deliveries %> in total</div>
+      </div>
+    </div>
+
+    <div class="stat">
+      <div class="stat__icon stat__icon--ok"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
+      <div>
+        <div class="stat__label">Delivered today</div>
+        <div class="stat__value"><%= stats.deliveredToday %></div>
+        <div class="stat__meta">$<%= stats.revenue.toFixed(2) %> collected</div>
+      </div>
     </div>
   </div>
 
-  <div class="dashboard" style="margin-top: 40px;">
+  <div class="grid grid--wide-left mt-6">
     <div class="card">
-      <h3>System Management</h3>
-      <div class="card-actions">
-        <a href="/users/manage" class="btn btn-primary">Manage Users</a>
-        <a href="/inventory" class="btn btn-success">Manage Inventory</a>
+      <div class="card__header">
+        <h3>Deliveries created</h3>
+        <span class="text-muted" style="font-size: 0.85rem;">Last 14 days</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="trendChart" aria-label="Deliveries created per day over the last 14 days" role="img"></canvas>
+      </div>
+      <div id="trendChartEmpty" class="alert alert--info mt-4" hidden>
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <p>No deliveries have been created in the last 14 days.</p>
       </div>
     </div>
+
     <div class="card">
-      <h3>Operations Hub</h3>
-      <div class="hub-actions">
-        <a href="/admin/view-as/manager">Track Deliveries</a>
-        <a href="/delivery-reports">Delivery Reports</a>
-        <a href="/view-messages" class="btn btn-secondary notification-button-wrapper">
-            View Contact Messages
-            <% if (locals.unreadMessageCount && unreadMessageCount > 0) { %>
-                <span class="notification-badge"><%= unreadMessageCount %></span>
-            <% } %>
-        </a>
+      <div class="card__header"><h3>Available stock by category</h3></div>
+      <div class="chart-wrap chart-wrap--sm">
+        <canvas id="stockChart" aria-label="Available stock by category" role="img"></canvas>
+      </div>
+      <div id="stockChartEmpty" class="alert alert--info mt-4" hidden>
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <p>No stock data to chart yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid--2 mt-6">
+    <div class="card">
+      <div class="card__header">
+        <h3>Delivery pipeline</h3>
+        <a class="btn btn-ghost btn-sm" href="/delivery-reports">All reports</a>
+      </div>
+      <div class="chart-wrap chart-wrap--sm">
+        <canvas id="statusChart" aria-label="Deliveries by status" role="img"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__header">
+        <h3>Recent activity</h3>
+        <a class="btn btn-ghost btn-sm" href="/manager-dashboard">Open dispatch</a>
+      </div>
+      <% if (recentDeliveries.length === 0) { %>
+        <div class="empty">
+          <div class="empty__icon"><i class="fa-solid fa-inbox" aria-hidden="true"></i></div>
+          <p>No deliveries yet.</p>
+        </div>
+      <% } else { %>
+        <ul class="notice-list">
+          <% recentDeliveries.forEach(delivery => { %>
+            <li class="notice">
+              <div class="notice__body">
+                <span class="notice__msg"><%= delivery.customerAddress %></span>
+                <span class="notice__time">
+                  <%= delivery.assignedTo %> · <%= new Date(delivery.updatedAt).toLocaleString() %>
+                </span>
+              </div>
+              <span class="pill <%= delivery.status.toLowerCase().replace(' ', '-') %>"><%= delivery.status %></span>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="grid grid--2 mt-6">
+    <div class="card">
+      <div class="card__header"><h3>System management</h3></div>
+      <p>Accounts, roles and the full inventory catalogue.</p>
+      <div class="btn-group mt-4">
+        <a href="/users/manage" class="btn btn-primary">Manage users</a>
+        <a href="/inventory" class="btn btn-secondary">Manage inventory</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__header"><h3>Operations hub</h3></div>
+      <p>
+        Dispatch, reporting and everything customers have sent in.
+        <% if (stats.newMessages > 0) { %>
+          <strong><%= stats.newMessages %></strong> new message<%= stats.newMessages === 1 ? '' : 's' %> waiting.
+        <% } %>
+      </p>
+      <div class="btn-group mt-4">
+        <a href="/manager-dashboard" class="btn btn-secondary">Track deliveries</a>
+        <a href="/delivery-reports" class="btn btn-secondary">Delivery reports</a>
+        <a href="/view-messages" class="btn btn-secondary">Contact messages</a>
       </div>
     </div>
   </div>
 </main>
 
-
-<script>
+<script nonce="<%= cspNonce %>">
 document.addEventListener('DOMContentLoaded', () => {
-    try {
-        const dataProvider = document.getElementById('chart-data-provider');
-        if (!dataProvider) throw new Error("Data provider not found");
-        
-        const chartData = JSON.parse(dataProvider.dataset.chart);
-        if (!chartData) throw new Error("Chart data is null or undefined");
+  const provider = document.getElementById('chart-data-provider');
+  if (!provider || typeof Chart === 'undefined') return;
 
-        Chart.defaults.font.family = 'Inter';
-        Chart.defaults.color = '#333745';
-        
-        const deliveryCtx = document.getElementById('deliveryChart');
-        if (deliveryCtx && chartData.deliveryLabels) {
-            if (chartData.deliveryValues.some(v => v > 0)) {
-                new Chart(deliveryCtx, {
-                    type: 'bar',
-                    data: { 
-                        labels: chartData.deliveryLabels, 
-                        datasets: [{ 
-                            label: '# of Deliveries', 
-                            data: chartData.deliveryValues, 
-                            backgroundColor: '#6a6c38',
-                            borderColor: '#5a5c28',
-                            hoverBackgroundColor: '#5a5c28',
-                            borderWidth: 1, 
-                            borderRadius: 4 
-                        }] 
-                    },
-                    options: { 
-                        scales: { 
-                            y: { 
-                                beginAtZero: true, 
-                                ticks: { stepSize: 1 } 
-                            } 
-                        } 
-                    }
-                });
-            } else {
-                deliveryCtx.style.display = 'none';
-                document.getElementById('deliveryChartError').style.display = 'block';
-                document.getElementById('deliveryChartError').innerText = 'No deliveries have been made today.';
-            }
+  let data;
+  try {
+    data = JSON.parse(provider.dataset.chart);
+  } catch (e) {
+    console.error('Could not parse dashboard chart data:', e);
+    return;
+  }
+
+  const theme = window.apexChartTheme();
+  const showEmpty = (canvasId, emptyId) => {
+    document.getElementById(canvasId).closest('.chart-wrap').hidden = true;
+    document.getElementById(emptyId).hidden = false;
+  };
+
+  // Deliveries per day
+  if ((data.trendValues || []).some(v => v > 0)) {
+    new Chart(document.getElementById('trendChart'), {
+      type: 'bar',
+      data: {
+        labels: data.trendLabels,
+        datasets: [{
+          label: 'Deliveries',
+          data: data.trendValues,
+          backgroundColor: theme.series[0],
+          borderRadius: 4,
+          maxBarThickness: 34
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: theme.grid } },
+          x: { grid: { display: false } }
         }
+      }
+    });
+  } else {
+    showEmpty('trendChart', 'trendChartEmpty');
+  }
 
-        const stockCanvas = document.getElementById('stockChart');
-        if (stockCanvas && chartData.stockLabels && chartData.stockLabels.length > 0) {
-            const stockCtx = stockCanvas.getContext('2d');
-            
-            const generateUltimatePalette = (numColors) => {
-                const themeColorsHex = [
-                    '#1b0f0a', 
-                    '#541924', 
-                    '#2c3a2f', 
-                    '#5f3b1e', 
-                    '#6a6c38', 
-                    '#73675f',
-                    '#a05436', 
-                    '#a69281',
-                    '#d19c5d', 
-                    '#f6f4e1'  
-                ];
+  // Stock by category
+  if ((data.stockLabels || []).length > 0) {
+    new Chart(document.getElementById('stockChart'), {
+      type: 'doughnut',
+      data: {
+        labels: data.stockLabels,
+        datasets: [{
+          data: data.stockValues,
+          backgroundColor: theme.series,
+          borderColor: theme.surface,
+          borderWidth: 2,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '62%',
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  } else {
+    showEmpty('stockChart', 'stockChartEmpty');
+  }
 
-                const parseHex = hex => hex.replace(/^#/, '').match(/.{1,2}/g).map(v => parseInt(v, 16));
-                const rgbToHex = (r, g, b) => '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
-                const interpolate = (color1, color2, factor) => {
-                    const result = color1.slice();
-                    for (let i = 0; i < 3; i++) { result[i] = Math.round(result[i] + factor * (color2[i] - result[i])); }
-                    return result;
-                };
-
-                const themeColorsRgb = themeColorsHex.map(parseHex);
-                const palette = [];
-
-                if (numColors <= 1) return [themeColorsHex[0]];
-
-                for (let i = 0; i < numColors; i++) {
-                    const position = i / (numColors - 1);
-                    const segment = Math.floor(position * (themeColorsRgb.length - 1));
-                    const segmentFactor = (position * (themeColorsRgb.length - 1)) % 1;
-                    
-                    const colorA = themeColorsRgb[segment];
-                    const colorB = themeColorsRgb[Math.min(segment + 1, themeColorsRgb.length - 1)];
-                    
-                    const newColor = interpolate(colorA, colorB, segmentFactor);
-                    palette.push(rgbToHex(newColor[0], newColor[1], newColor[2]));
-                }
-                
-                return palette;
-            };
-
-            const finalColors = generateUltimatePalette(chartData.stockLabels.length);
-
-            new Chart(stockCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: chartData.stockLabels,
-                    datasets: [{
-                        label: 'Total Quantity',
-                        data: chartData.stockValues,
-                        backgroundColor: finalColors,
-                        hoverOffset: 12
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                padding: 15,
-                                boxWidth: 15,
-                            }
-                        }
-                    },
-                    cutout: '60%', 
-                    elements: {
-                        arc: {
-                            borderWidth: 0,
-                            bevelWidth: 5,
-                            bevelHighlightColor: 'rgba(255, 255, 255, 0.4)',
-                            bevelShadowColor: 'rgba(0, 0, 0, 0.25)'
-                        }
-                    }
-                }
-            });
-        
-        } else if(stockCanvas) {
-            stockCanvas.parentElement.style.display = 'none';
-            document.getElementById('stockChartError').style.display = 'block';
-            document.getElementById('stockChartError').innerText = 'No stock data available.';
-        }
-    } catch (e) {
-        console.error("A critical error occurred while rendering the charts:", e);
+  // Pipeline by status — colours map to the same semantics as the pills.
+  const statusColours = {
+    'Pending': theme.series[5] || theme.series[0],
+    'In Transit': theme.series[4] || theme.series[1],
+    'Delivered': theme.series[3] || theme.series[2],
+    'Failed': theme.series[6] || theme.series[0]
+  };
+  new Chart(document.getElementById('statusChart'), {
+    type: 'bar',
+    data: {
+      labels: data.statusLabels,
+      datasets: [{
+        label: 'Deliveries',
+        data: data.statusValues,
+        backgroundColor: data.statusLabels.map(l => statusColours[l]),
+        borderRadius: 4,
+        maxBarThickness: 26
+      }]
+    },
+    options: {
+      // Horizontal bars: four status labels read better along the y-axis
+      // in a narrow card. In Chart.js v4 this belongs inside options.
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: theme.grid } },
+        y: { grid: { display: false } }
+      }
     }
+  });
 });
 </script>
 

@@ -1,73 +1,181 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
-<main>
-    <h2>User Management</h2>
-    <p style="text-align: center;">Approve, manage, and edit all users in the system.</p>
+<%
+  const sortIcon = (field) => {
+    if (sort.field !== field) return 'fa-sort';
+    return sort.dir === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+  };
+  const roleLabel = (role) => role === 'DeliveryStaff' ? 'Delivery staff' : role;
+  const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2)
+    .map(part => part[0].toUpperCase()).join('');
+%>
 
-    <h3>Pending Approval</h3>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Requested Role</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% if (pendingUsers.length > 0) { %>
-                    <% pendingUsers.forEach(user => { %>
-                        <tr>
-                            <td><%= user.name %></td>
-                            <td><%= user.email %></td>
-                            <td><%= user.role %></td>
-                            <td style="display: flex; gap: 10px;">
-                                <form action="/users/approve/<%= user._id %>" method="POST" style="margin: 0;">
-                                    <button type="submit" class="btn btn-success" style="padding: 5px 10px; font-size: 0.8rem;">Approve</button>
-                                </form>
-                                <form action="/users/reject/<%= user._id %>" method="POST" style="margin: 0;">
-                                    <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">Reject</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <% }) %>
-                <% } else { %>
-                    <tr><td colspan="4" style="text-align: center;">No users are currently pending approval.</td></tr>
-                <% } %>
-            </tbody>
-        </table>
+<main id="main-content">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1 style="font-size: 1.75rem;">User management</h1>
+      <p>Every account in the system, with its role and contact details.</p>
     </div>
+  </div>
 
-    <h3 style="margin-top: 40px;">Approved Users</h3>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% if (approvedUsers.length > 0) { %>
-                    <% approvedUsers.forEach(user => { %>
-                        <tr>
-                            <td><%= user.name %></td>
-                            <td><%= user.email %></td>
-                            <td><%= user.role %></td>
-                            <td>
-                                <a href="/users/edit/<%= user._id %>" class="action-link">Edit</a>
-                                <a href="/users/delete/<%= user._id %>" class="action-link delete-link" onclick="return confirm('Are you sure? This action will permanently delete the user and their associated data.');">Delete</a>
-                            </td>
-                        </tr>
-                    <% }) %>
-                <% } else { %>
-                    <tr><td colspan="4" style="text-align: center;">No approved users found.</td></tr>
-                <% } %>
-            </tbody>
+  <% if (pendingUsers.length > 0) { %>
+    <section class="card mb-5" style="border-color: var(--warn-border);">
+      <div class="card__header">
+        <h3>
+          <i class="fa-solid fa-user-clock" style="color: var(--warn);" aria-hidden="true"></i>
+          Waiting for approval
+          <span class="badge"><%= pendingUsers.length %></span>
+        </h3>
+      </div>
+      <p class="mb-4">These people have registered but cannot sign in until you approve them.</p>
+
+      <div class="table-scroll">
+        <table class="responsive">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Requested role</th>
+              <th scope="col">Requested</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% pendingUsers.forEach(person => { %>
+              <tr>
+                <td data-label="Name">
+                  <span style="display: inline-flex; align-items: center; gap: var(--sp-3);">
+                    <span class="avatar" aria-hidden="true"><%= initials(person.name) %></span>
+                    <span class="cell-title"><%= person.name %></span>
+                  </span>
+                </td>
+                <td data-label="Email"><a href="mailto:<%= person.email %>"><%= person.email %></a></td>
+                <td data-label="Requested role">
+                  <span class="pill pending"><%= roleLabel(person.role) %></span>
+                </td>
+                <td data-label="Requested" class="nowrap">
+                  <span class="cell-sub">
+                    <%= person.createdAt ? new Date(person.createdAt).toLocaleDateString() : '—' %>
+                  </span>
+                </td>
+                <td data-label="Actions" class="actions">
+                  <div class="btn-group">
+                    <form class="inline-form" action="/users/approve/<%= person._id %>" method="POST">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button type="submit" class="btn btn-success btn-sm">
+                        <i class="fa-solid fa-check" aria-hidden="true"></i> Approve
+                      </button>
+                    </form>
+                    <form class="inline-form" action="/users/reject/<%= person._id %>" method="POST"
+                          data-confirm="Reject <%= person.name %>'s request? Their account will be deleted.">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button type="submit" class="btn btn-ghost btn-sm text-danger">Reject</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
         </table>
+      </div>
+    </section>
+  <% } %>
+
+  <h2 class="section__title">Active accounts</h2>
+
+  <div class="toolbar">
+    <form class="filters" action="/users/manage" method="GET" role="search">
+      <div class="search-field">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <label class="sr-only" for="search">Search users</label>
+        <input type="search" id="search" name="search" data-autosubmit
+               value="<%= filters.search %>" placeholder="Search name or email..." />
+      </div>
+
+      <label class="sr-only" for="role">Filter by role</label>
+      <select id="role" name="role" data-autosubmit>
+        <option value="">All roles</option>
+        <% roles.forEach(role => { %>
+          <option value="<%= role %>" <%= filters.role === role ? 'selected' : '' %>><%= roleLabel(role) %></option>
+        <% }) %>
+      </select>
+
+      <noscript><button class="btn btn-secondary" type="submit">Filter</button></noscript>
+    </form>
+  </div>
+
+  <div class="table-container">
+    <div class="table-scroll">
+      <table class="responsive">
+        <thead>
+          <tr>
+            <th scope="col"><a href="<%= sortHref('name') %>">Name <i class="fa-solid <%= sortIcon('name') %> sort-ind" aria-hidden="true"></i></a></th>
+            <th scope="col"><a href="<%= sortHref('email') %>">Email <i class="fa-solid <%= sortIcon('email') %> sort-ind" aria-hidden="true"></i></a></th>
+            <th scope="col"><a href="<%= sortHref('role') %>">Role <i class="fa-solid <%= sortIcon('role') %> sort-ind" aria-hidden="true"></i></a></th>
+            <th scope="col">Phone</th>
+            <th scope="col">Sign-in</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (users.length === 0) { %>
+            <tr>
+              <td colspan="6">
+                <div class="empty">
+                  <div class="empty__icon"><i class="fa-solid fa-user-slash" aria-hidden="true"></i></div>
+                  <div class="empty__title">No users found</div>
+                  <p>Nothing matches these filters.</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% users.forEach(person => {
+                 const isSelf = String(person._id) === String(user._id); %>
+              <tr>
+                <td data-label="Name">
+                  <span style="display: inline-flex; align-items: center; gap: var(--sp-3);">
+                    <span class="avatar" aria-hidden="true"><%= initials(person.name) %></span>
+                    <span>
+                      <span class="cell-title"><%= person.name %></span>
+                      <% if (isSelf) { %><span class="badge" style="margin-left: 6px;">You</span><% } %>
+                    </span>
+                  </span>
+                </td>
+                <td data-label="Email"><a href="mailto:<%= person.email %>"><%= person.email %></a></td>
+                <td data-label="Role"><span class="pill pill--plain"><%= roleLabel(person.role) %></span></td>
+                <td data-label="Phone"><%= person.phone || '—' %></td>
+                <td data-label="Sign-in">
+                  <% if (person.googleId) { %>
+                    <span class="cell-sub"><i class="fa-brands fa-google" aria-hidden="true"></i> Google</span>
+                  <% } else { %>
+                    <span class="cell-sub"><i class="fa-solid fa-key" aria-hidden="true"></i> Password</span>
+                  <% } %>
+                </td>
+                <td data-label="Actions" class="actions">
+                  <div class="btn-group">
+                    <a href="/admin/user-detail/<%= person._id %>" class="btn btn-ghost btn-sm">View</a>
+                    <a href="/users/edit/<%= person._id %>" class="btn btn-secondary btn-sm">Edit</a>
+                    <% if (!isSelf) { %>
+                      <form class="inline-form" action="/users/delete/<%= person._id %>" method="POST"
+                            data-confirm="Delete <%= person.name %>? Their deliveries will be kept but unassigned.">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button type="submit" class="btn btn-ghost btn-sm text-danger"
+                                aria-label="Delete <%= person.name %>">
+                          <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
     </div>
+  </div>
+
+  <%- include('partials/_pagination', { pagination }) %>
 </main>
+
 <%- include('partials/footer') %>

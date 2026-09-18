@@ -1,11 +1,16 @@
 {
   "name": "warehouse-delivery-system",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI-assisted warehouse inventory, delivery dispatch and billing system.",
   "main": "server.js",
- "scripts": {
+  "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js",
+    "demo": "node scripts/demo.js",
+    "seed": "node scripts/seed.js",
+    "seed:force": "node scripts/seed.js --force",
+    "test": "node --test",
+    "smoke": "node scripts/smoke.js",
     "tailwind:init": "tailwindcss init -p"
   },
   "keywords": [],
@@ -14,15 +19,19 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "chart.js": "^4.4.2",
+    "compression": "^1.8.2",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.7.0",
     "express-session": "^1.18.0",
     "express-validator": "^7.2.1",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.0",
+    "morgan": "^1.12.1",
     "node-fetch": "^2.7.0",
     "nodemailer": "^7.0.5",
     "passport": "^0.7.0",
@@ -31,8 +40,13 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "mongodb-memory-server": "^11.2.0",
+    "nodemon": "^3.1.14",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

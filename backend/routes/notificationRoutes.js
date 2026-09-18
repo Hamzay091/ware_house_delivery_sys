@@ -1,10 +1,14 @@
 const express = require('express');
-const router = express.Router();
+
 const notificationController = require('../controllers/notificationController');
-const { isAuthenticated, isManagerOrAdmin } = require('../middleware/authMiddleware');
+const { isAuthenticated } = require('../middleware/authMiddleware');
 
-router.get('/', isAuthenticated, isManagerOrAdmin, notificationController.renderNotificationsPage);
+const router = express.Router();
 
-router.get('/read/:id', isAuthenticated, notificationController.markAsRead);
+router.use(isAuthenticated);
+
+router.get('/', notificationController.renderNotificationsPage);
+router.post('/read/:id', notificationController.markAsRead);
+router.post('/read-all', notificationController.markAllAsRead);
 
 module.exports = router;

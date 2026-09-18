@@ -1,66 +1,150 @@
-<nav>
- 
-  <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="/#about-section">About</a></li>
-    <li><a href="/#contact-section">Contact</a></li>
-    <% if (user) { %>
-      <li><a href="/stock">Stock Catalogue</a></li>
-      <% if (user.role === 'Admin' || user.role === 'Manager') { %>
-        <li><a href="/inventory">Inventory</a></li>
-        <li><a href="/billing/invoices">Billing</a></li>
-        <!-- NOTIFICATIONS LINK HAS BEEN MOVED TO THE ADMIN SIDEBAR -->
-      <% } %>
-      <% if (user.role === 'Admin') { %>
-        <li><a href="/admin-dashboard">Admin Dashboard</a></li>
-      <% } else if (user.role === 'Manager') { %>
-        <li><a href="/manager-dashboard">Manager Dashboard</a></li>
-      <% } else if (user.role === 'DeliveryStaff') { %>
-        <li><a href="/delivery-staff-dashboard">My Deliveries</a></li>
-      <% } %>
-      <li><a href="/profile">My Profile</a></li>
-      <li><a href="/logout">Logout</a></li>
-    <% } else { %>
-      <li><a href="/login">Login</a></li>
-      <li><a href="/register">Register</a></li>
-    <% } %>
-  </ul>
+<%
+  // currentPath is set by the app-locals middleware; fall back to '/' so the
+  // partial still renders if a view is ever rendered outside a request.
+  const path = typeof currentPath !== 'undefined' ? currentPath : '/';
+  const isActive = (href) => {
+    if (href === '/') return path === '/';
+    return path === href || path.startsWith(href + '/');
+  };
+  const cls = (href) => 'nav__link' + (isActive(href) ? ' is-active' : '');
 
-  <% if (user && user.role === 'Admin') { %>
-    <button id="admin-menu-toggle" class="admin-menu-icon" aria-label="Open Admin Menu"><i class="fa-solid fa-bars-staggered"></i></button>
-  <% } %>
-</nav>
+  const links = [];
+  if (user) {
+    if (user.role === 'Admin') {
+      links.push({ href: '/admin-dashboard', label: 'Dashboard', icon: 'fa-gauge-high' });
+    } else if (user.role === 'Manager') {
+      links.push({ href: '/manager-dashboard', label: 'Dashboard', icon: 'fa-gauge-high' });
+    } else if (user.role === 'DeliveryStaff') {
+      links.push({ href: '/delivery-staff-dashboard', label: 'My Deliveries', icon: 'fa-truck-fast' });
+    }
+    if (user.role === 'Admin' || user.role === 'Manager') {
+      links.push({ href: '/inventory', label: 'Inventory', icon: 'fa-boxes-stacked' });
+      links.push({ href: '/delivery-reports', label: 'Deliveries', icon: 'fa-route' });
+      links.push({ href: '/billing/invoices', label: 'Billing', icon: 'fa-file-invoice-dollar' });
+    }
+    links.push({ href: '/stock', label: 'Catalogue', icon: 'fa-warehouse' });
+  } else {
+    links.push({ href: '/', label: 'Home', icon: 'fa-house' });
+    links.push({ href: '/#features', label: 'Features', icon: 'fa-star' });
+    links.push({ href: '/#contact', label: 'Contact', icon: 'fa-envelope' });
+  }
 
+  const initials = user && user.name
+    ? user.name.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('')
+    : '?';
+  const roleLabel = user && user.role === 'DeliveryStaff' ? 'Delivery Staff' : (user ? user.role : '');
+  const unread = typeof unreadCount !== 'undefined' ? unreadCount : 0;
+%>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="<%= user ? '/' : '/' %>">
+      <span class="brand__mark" aria-hidden="true"><i class="fa-solid fa-cubes-stacked"></i></span>
+      <span>
+        Apex
+        <span class="brand__sub">Logistics</span>
+      </span>
+    </a>
+
+    <button class="icon-btn nav-toggle" data-nav-toggle type="button"
+            aria-controls="primary-nav" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <nav aria-label="Primary">
+      <ul class="nav" id="primary-nav">
+        <% links.forEach(link => { %>
+          <li>
+            <a class="<%= cls(link.href.split('#')[0] || '/') %>" href="<%= link.href %>">
+              <i class="fa-solid <%= link.icon %>" aria-hidden="true"></i><%= link.label %>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    </nav>
+
+    <div class="topbar__actions">
+      <button class="icon-btn theme-toggle" data-theme-toggle type="button"
+              aria-pressed="false" aria-label="Switch theme" title="Switch theme">
+        <i class="fa-solid fa-sun" aria-hidden="true"></i>
+        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+      </button>
+
+      <% if (user && (user.role === 'Admin' || user.role === 'Manager')) { %>
+        <a class="icon-btn" href="/notifications"
+           aria-label="Notifications<%= unread > 0 ? ' (' + unread + ' unread)' : '' %>" title="Notifications">
+          <i class="fa-solid fa-bell" aria-hidden="true"></i>
+          <% if (unread > 0) { %>
+            <span class="icon-btn__badge"><%= unread > 99 ? '99+' : unread %></span>
+          <% } %>
+        </a>
+      <% } %>
+
+      <% if (user && user.role === 'Admin') { %>
+        <button class="icon-btn" id="sidebar-toggle" type="button"
+                aria-controls="admin-sidebar" aria-expanded="false" aria-label="Open admin menu" title="Admin menu">
+          <i class="fa-solid fa-bars-staggered" aria-hidden="true"></i>
+        </button>
+      <% } %>
+
+      <% if (user) { %>
+        <div class="user-menu">
+          <button class="user-chip" type="button" data-dropdown="user-dropdown"
+                  aria-haspopup="true" aria-expanded="false">
+            <span class="avatar" aria-hidden="true"><%= initials %></span>
+            <span class="user-chip__name"><%= user.name %></span>
+            <i class="fa-solid fa-chevron-down user-chip__caret" aria-hidden="true"></i>
+          </button>
+
+          <div class="dropdown" id="user-dropdown" role="menu">
+            <div class="dropdown__header">
+              <div class="dropdown__name"><%= user.name %></div>
+              <div class="dropdown__meta"><%= user.email %></div>
+              <div class="dropdown__meta"><span class="badge"><%= roleLabel %></span></div>
+            </div>
+            <a class="dropdown__item" role="menuitem" href="/profile">
+              <i class="fa-solid fa-user" aria-hidden="true"></i> My profile
+            </a>
+            <a class="dropdown__item" role="menuitem" href="/users/profile/edit">
+              <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit profile
+            </a>
+            <a class="dropdown__item" role="menuitem" href="/users/profile/change-password">
+              <i class="fa-solid fa-key" aria-hidden="true"></i> Change password
+            </a>
+            <form action="/logout" method="POST">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <button class="dropdown__item dropdown__item--danger" role="menuitem" type="submit">
+                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Log out
+              </button>
+            </form>
+          </div>
+        </div>
+      <% } else { %>
+        <a class="btn btn-ghost btn-sm" href="/login">Log in</a>
+        <a class="btn btn-primary btn-sm" href="/register">Get started</a>
+      <% } %>
+    </div>
+  </div>
+</header>
 
 <% if (user && user.role === 'Admin') { %>
   <div id="sidebar-overlay"></div>
-  <aside id="admin-sidebar">
-    <div class="sidebar-header">
-      <h3>Admin Controls</h3>
-      <button id="sidebar-close-btn" aria-label="Close Admin Menu"><i class="fa-solid fa-xmark"></i></button>
+  <aside class="sidebar" id="admin-sidebar" aria-label="Admin controls" aria-hidden="true">
+    <div class="sidebar__header">
+      <h3>Admin controls</h3>
+      <button class="icon-btn" id="sidebar-close" type="button" aria-label="Close admin menu">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
     </div>
-    <div class="sidebar-links">
-      <a href="/notifications"><i class="fa-solid fa-bell"></i> Notifications</a>
-      <a href="/admin/view-as/manager"><i class="fa-solid fa-chalkboard-user"></i> View Manager Dashboard</a>
-      <a href="/admin/managers"><i class="fa-solid fa-user-tie"></i> Manage Managers</a>
-      <a href="/admin/delivery-staff"><i class="fa-solid fa-truck-fast"></i> Manage Delivery Staff</a>
+    <div class="sidebar__links">
+      <div class="sidebar__group">Oversight</div>
+      <a href="/notifications"><i class="fa-solid fa-bell" aria-hidden="true"></i> Notifications<% if (unread > 0) { %> <span class="badge"><%= unread %></span><% } %></a>
+      <a href="/admin/view-as/manager"><i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i> View manager dashboard</a>
+      <a href="/view-messages"><i class="fa-solid fa-inbox" aria-hidden="true"></i> Contact messages</a>
+
+      <div class="sidebar__group">People</div>
+      <a href="/users/manage"><i class="fa-solid fa-users-gear" aria-hidden="true"></i> Manage all users</a>
+      <a href="/admin/managers"><i class="fa-solid fa-user-tie" aria-hidden="true"></i> Managers</a>
+      <a href="/admin/delivery-staff"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i> Delivery staff</a>
     </div>
   </aside>
 <% } %>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const toggleButton = document.getElementById('admin-menu-toggle');
-    const closeButton = document.getElementById('sidebar-close-btn');
-    const overlay = document.getElementById('sidebar-overlay');
-    
-    if (toggleButton) {
-      const openSidebar = () => document.body.classList.add('sidebar-open');
-      const closeSidebar = () => document.body.classList.remove('sidebar-open');
-
-      toggleButton.addEventListener('click', openSidebar);
-      closeButton.addEventListener('click', closeSidebar);
-      overlay.addEventListener('click', closeSidebar);
-    }
-  });
-</script>

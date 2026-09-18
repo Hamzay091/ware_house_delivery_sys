@@ -1,28 +1,60 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
 
-<main>
-  <form action="/users/edit/<%= userToEdit._id %>" method="POST">
-    <h2>Edit User: <%= userToEdit.name %></h2>
-    
-    <label for="name">Full Name</label>
-    <input type="text" id="name" name="name" value="<%= userToEdit.name %>" required />
-    
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" value="<%= userToEdit.email %>" required />
-    
-    <label for="phone">Phone</label>
-    <input type="text" id="phone" name="phone" value="<%= userToEdit.phone || '' %>" />
-    
-    <label for="role">Role</label>
-    <select id="role" name="role" required>
-      <option value="Admin" <%= userToEdit.role === 'Admin' ? 'selected' : '' %>>Admin</option>
-      <option value="Manager" <%= userToEdit.role === 'Manager' ? 'selected' : '' %>>Manager</option>
-      <option value="DeliveryStaff" <%= userToEdit.role === 'DeliveryStaff' ? 'selected' : '' %>>Delivery Staff</option>
-    </select>
-    
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-  </form>
+<main id="main-content">
+  <div class="form-card">
+    <h1 style="font-size: 1.6rem;">Edit <%= userToEdit.name %></h1>
+    <p class="form-card__intro"><%= userToEdit.email %></p>
+
+    <%- include('partials/_form-errors', { errors }) %>
+
+    <form action="/users/edit/<%= userToEdit._id %>" method="POST" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" value="<%= userToEdit.name %>" required />
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="<%= userToEdit.email %>" required />
+      </div>
+
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" name="phone" value="<%= userToEdit.phone || '' %>" />
+      </div>
+
+      <div class="field">
+        <label for="role">Role</label>
+        <select id="role" name="role" required
+                <%= String(userToEdit._id) === String(user._id) ? 'disabled' : '' %>>
+          <% roles.forEach(role => { %>
+            <option value="<%= role %>" <%= userToEdit.role === role ? 'selected' : '' %>>
+              <%= role === 'DeliveryStaff' ? 'Delivery staff' : role %>
+            </option>
+          <% }) %>
+        </select>
+        <% if (String(userToEdit._id) === String(user._id)) { %>
+          <input type="hidden" name="role" value="<%= userToEdit.role %>" />
+          <p class="field__hint">
+            You cannot change your own role — ask another admin to do it.
+          </p>
+        <% } %>
+      </div>
+
+      <div class="alert alert--info">
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <p>Passwords cannot be set from here. Users change their own from their profile.</p>
+      </div>
+
+      <div class="btn-group" style="width: 100%;">
+        <button type="submit" class="btn btn-primary" style="flex: 1;">Save changes</button>
+        <a href="/users/manage" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
 </main>
 
 <%- include('partials/footer') %>

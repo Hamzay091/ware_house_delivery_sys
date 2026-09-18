@@ -1,49 +1,144 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
+<%
+  const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2)
+    .map(part => part[0].toUpperCase()).join('');
+  const roleLabel = profile.role === 'DeliveryStaff' ? 'Delivery staff' : profile.role;
+%>
 
-<main>
-  <h2>Details for <%= user.name %> (<%= user.role %>)</h2>
-
-  <div class="card" style="max-width: 700px; margin: 0 auto 30px auto;">
-    <p><strong>Name:</strong> <%= user.name %></p>
-    <p><strong>Email:</strong> <%= user.email %></p>
-    <p><strong>Phone:</strong> <%= user.phone || 'Not provided' %></p>
+<main id="main-content">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1 style="font-size: 1.75rem;"><%= profile.name %></h1>
+      <p><span class="pill pill--plain"><%= roleLabel %></span></p>
+    </div>
+    <div class="page-head__actions">
+      <a class="btn btn-secondary" href="/users/edit/<%= profile._id %>">
+        <i class="fa-solid fa-pen" aria-hidden="true"></i> Edit account
+      </a>
+      <a class="btn btn-ghost" href="/users/manage">All users</a>
+    </div>
   </div>
 
-  <% if (deliveries.length > 0) { %>
-    <h3>Assigned Deliveries</h3>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Destination</th>
-            <th>Items</th>
-            <th>Status</th>
-            <th>Assigned On</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% deliveries.forEach(delivery => { %>
-            <tr>
-              <td><%= delivery.customerAddress %></td>
-              <td>
-                <ul style="padding-left: 15px; margin: 0;">
-                  <% delivery.items.forEach(item => { %>
-                    <li><%= item.quantity %>x <%= item.itemId.name %></li>
-                  <% }) %>
-                </ul>
-              </td>
-              <td><span class="status-pill <%= delivery.status.toLowerCase().replace(' ', '-') %>"><%= delivery.status %></span></td>
-              <td><%= new Date(delivery.createdAt).toLocaleDateString() %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
+  <div class="grid grid--wide-left">
+    <div class="stack">
+      <div class="stats">
+        <% ['Pending', 'In Transit', 'Delivered', 'Failed'].forEach(status => {
+             const key = status.toLowerCase().replace(' ', '-');
+             const tones = {
+               'pending': 'stat__icon--warn',
+               'in-transit': 'stat__icon--info',
+               'delivered': 'stat__icon--ok',
+               'failed': 'stat__icon--danger'
+             };
+             const icons = {
+               'pending': 'fa-clock',
+               'in-transit': 'fa-truck-fast',
+               'delivered': 'fa-circle-check',
+               'failed': 'fa-circle-xmark'
+             };
+        %>
+          <div class="stat">
+            <div class="stat__icon <%= tones[key] %>">
+              <i class="fa-solid <%= icons[key] %>" aria-hidden="true"></i>
+            </div>
+            <div>
+              <div class="stat__label"><%= status %></div>
+              <div class="stat__value"><%= statusCounts[status] || 0 %></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="table-container">
+        <div class="table-scroll">
+          <table class="responsive">
+            <thead>
+              <tr>
+                <th scope="col">Destination</th>
+                <th scope="col">Items</th>
+                <th scope="col">Status</th>
+                <th scope="col">Assigned on</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (deliveries.length === 0) { %>
+                <tr>
+                  <td colspan="4">
+                    <div class="empty">
+                      <div class="empty__icon"><i class="fa-solid fa-clipboard" aria-hidden="true"></i></div>
+                      <div class="empty__title">No deliveries</div>
+                      <p>This user has never been assigned a delivery.</p>
+                    </div>
+                  </td>
+                </tr>
+              <% } else { %>
+                <% deliveries.forEach(delivery => { %>
+                  <tr>
+                    <td data-label="Destination"><span class="cell-title"><%= delivery.customerAddress %></span></td>
+                    <td data-label="Items">
+                      <ul class="item-list">
+                        <% delivery.items.forEach(line => { %>
+                          <li>
+                            <span class="qty"><%= line.quantity %>&times;</span>
+                            <% if (line.itemId) { %>
+                              <%= line.itemId.name %>
+                            <% } else { %>
+                              <em class="text-danger">deleted item</em>
+                            <% } %>
+                          </li>
+                        <% }) %>
+                      </ul>
+                    </td>
+                    <td data-label="Status">
+                      <span class="pill <%= delivery.status.toLowerCase().replace(' ', '-') %>"><%= delivery.status %></span>
+                    </td>
+                    <td data-label="Assigned on" class="nowrap">
+                      <span class="cell-sub"><%= new Date(delivery.createdAt).toLocaleDateString() %></span>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-  <% } else { %>
-    <div class="feedback-box info-box" style="max-width: 700px;">
-      This user has no assigned deliveries.
+
+    <div class="card" style="align-self: start;">
+      <div class="card__header"><h3>Account</h3></div>
+      <div style="display: flex; align-items: center; gap: var(--sp-4); margin-bottom: var(--sp-5);">
+        <span class="avatar" style="width: 52px; height: 52px; font-size: 1.1rem;" aria-hidden="true">
+          <%= initials(profile.name) %>
+        </span>
+        <div>
+          <div class="cell-title"><%= profile.name %></div>
+          <div class="cell-sub"><%= roleLabel %></div>
+        </div>
+      </div>
+
+      <dl style="display: grid; gap: var(--sp-4); margin: 0;">
+        <div>
+          <dt class="stat__label">Email</dt>
+          <dd style="margin: 0;"><a href="mailto:<%= profile.email %>"><%= profile.email %></a></dd>
+        </div>
+        <div>
+          <dt class="stat__label">Phone</dt>
+          <dd style="margin: 0;"><%= profile.phone || 'Not provided' %></dd>
+        </div>
+        <div>
+          <dt class="stat__label">Sign-in method</dt>
+          <dd style="margin: 0;"><%= profile.googleId ? 'Google' : 'Email and password' %></dd>
+        </div>
+        <div>
+          <dt class="stat__label">Joined</dt>
+          <dd style="margin: 0;">
+            <%= profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'Unknown' %>
+          </dd>
+        </div>
+      </dl>
     </div>
-  <% } %>
+  </div>
 </main>
+
 <%- include('partials/footer') %>

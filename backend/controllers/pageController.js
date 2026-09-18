@@ -1,39 +1,87 @@
+const { validationResult } = require('express-validator');
+
 const Item = require('../models/item');
 const Contact = require('../models/contact');
+const Delivery = require('../models/delivery');
+const User = require('../models/user');
+const { searchRegex } = require('../utils/query');
 
-exports.renderHomePage = (req, res) => {
+exports.renderHomePage = async (req, res, next) => {
+    try {
+        // A few real numbers beat invented marketing figures on the hero.
+        const [items, deliveries, staff] = await Promise.all([
+            Item.countDocuments(),
+            Delivery.countDocuments(),
+            User.countDocuments({ role: 'DeliveryStaff' })
+        ]);
 
-  res.render('index', { message: null });
+        res.render('index', {
+            title: null,
+            errors: [],
+            values: {},
+            highlights: { items, deliveries, staff }
+        });
+    } catch (error) {
+        next(error);
+    }
 };
 
+exports.handleContactForm = async (req, res, next) => {
+    const errors = validationResult(req);
+    const values = { name: req.body.name, email: req.body.email, message: req.body.message };
 
-exports.handleContactForm = async (req, res) => {
-  try {
-    await Contact.create(req.body);
-    
-    res.render('index', { message: 'Thank you for your message! We will get back to you soon.' });
-  } catch (error) {
-    console.error('Contact form submission error:', error);
-  
-    res.render('index', { message: 'Sorry, there was an error sending your message.' });
-  }
+    if (!errors.isEmpty()) {
+        const [items, deliveries, staff] = await Promise.all([
+            Item.countDocuments(), Delivery.countDocuments(), User.countDocuments({ role: 'DeliveryStaff' })
+        ]);
+        return res.status(400).render('index', {
+            title: null,
+            errors: errors.array(),
+            values,
+            highlights: { items, deliveries, staff }
+        });
+    }
+
+    try {
+        // Only the three fields the form actually offers — `status` stays at
+        // its default rather than being settable from the request.
+        await Contact.create({
+            name: String(req.body.name).trim(),
+            email: String(req.body.email).toLowerCase().trim(),
+            message: String(req.body.message).trim()
+        });
+
+        req.flash('success', 'Thanks for getting in touch — we will reply soon.');
+        res.redirect('/#contact');
+    } catch (error) {
+        next(error);
+    }
 };
 
-exports.renderProfilePage = (req, res) => res.render('profile');
+exports.renderProfilePage = (req, res) => res.render('profile', { title: 'My profile' });
 
-exports.renderStockCataloguePage = async (req, res) => {
-  try {
-    const items = await Item.find().populate('stockId');
-    items.sort((a, b) => {
-      const nameA = a.stockId ? a.stockId.name.toLowerCase() : '';
-      const nameB = b.stockId ? b.stockId.name.toLowerCase() : '';
-      if (nameA < nameB) return -1;
-      if (nameA > nameB) return 1;
-      return 0;
-    });
-    res.render('stock-catalogue', { items });
-  } catch (error) {
-    console.error("Error fetching stock catalogue:", error);
-    res.status(500).send("Error loading stock page.");
-  }
+exports.renderStockCataloguePage = async (req, res, next) => {
+    try {
+        const filter = {};
+        const regex = searchRegex(req.query.search);
+        if (regex) filter.$or = [{ name: regex }, { sku: regex }, { location: regex }];
+        if (req.query.availability === 'in') filter.availableStock = { $gt: 0 };
+        if (req.query.availability === 'out') filter.availableStock = { $lte: 0 };
+
+        const items = await Item.find(filter)
+            .populate('stockId')
+            .sort({ name: 1, sku: 1 })
+            .limit(500);
+
+        res.render('stock-catalogue', {
+            title: 'Stock catalogue',
+            items,
+            filters: {
+                search: req.query.search || '',
+                availability: req.query.availability || ''
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
 };

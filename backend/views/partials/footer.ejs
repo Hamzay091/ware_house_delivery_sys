@@ -1,5 +1,15 @@
-  <footer style="text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-    <p>© 2025 AI Smart Warehouse & Delivery Management System</p>
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span>&copy; <%= new Date().getFullYear() %> Apex Logistics — AI Smart Warehouse &amp; Delivery Management</span>
+      <nav class="site-footer__links" aria-label="Footer">
+        <a href="/">Home</a>
+        <a href="/#features">Features</a>
+        <a href="/#contact">Contact</a>
+        <% if (user) { %><a href="/stock">Catalogue</a><% } %>
+      </nav>
+    </div>
   </footer>
+
+  <%- include('_flash') %>
 </body>
 </html>

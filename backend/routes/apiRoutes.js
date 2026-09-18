@@ -1,38 +1,52 @@
 const express = require('express');
-const router = express.Router();
+
 const Item = require('../models/item');
 const Delivery = require('../models/delivery');
-const { isAuthenticated, isAdmin } = require('../middleware/authMiddleware');
+const { isAdmin } = require('../middleware/authMiddleware');
 
-router.get('/chart-data', isAuthenticated, isAdmin, async (req, res) => {
+const router = express.Router();
+
+router.get('/chart-data', isAdmin, async (req, res, next) => {
     try {
-        const sevenDaysAgo = new Date(new Date().setDate(new Date().getDate() - 7));
+        const days = Math.min(90, Math.max(1, parseInt(req.query.days, 10) || 7));
+        const since = new Date();
+        since.setHours(0, 0, 0, 0);
+        since.setDate(since.getDate() - (days - 1));
 
-        const deliveryStats = await Delivery.aggregate([
-            { $match: { createdAt: { $gte: sevenDaysAgo } } },
-            { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
-            { $sort: { _id: 1 } }
+        const [deliveryStats, stockStats] = await Promise.all([
+            Delivery.aggregate([
+                { $match: { createdAt: { $gte: since } } },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                        count: { $sum: 1 }
+                    }
+                },
+                { $sort: { _id: 1 } }
+            ]),
+            Item.aggregate([
+                { $lookup: { from: 'stocks', localField: 'stockId', foreignField: '_id', as: 'stock' } },
+                { $unwind: { path: '$stock', preserveNullAndEmptyArrays: true } },
+                {
+                    $group: {
+                        _id: { $ifNull: ['$stock.name', 'Uncategorised'] },
+                        // This summed a non-existent `quantity` field before,
+                        // so every slice came back as zero.
+                        totalQuantity: { $sum: '$availableStock' }
+                    }
+                },
+                { $sort: { totalQuantity: -1 } }
+            ])
         ]);
 
-        const stockStats = await Item.aggregate([
-            { $lookup: { from: 'stocks', localField: 'stockId', foreignField: '_id', as: 'stock' } },
-            { $unwind: '$stock' },
-            { $group: { _id: '$stock.name', totalQuantity: { $sum: '$quantity' } } },
-            { $sort: { totalQuantity: -1 } }
-        ]);
-
-        const chartData = {
+        res.json({
             deliveryLabels: deliveryStats.map(stat => stat._id),
             deliveryValues: deliveryStats.map(stat => stat.count),
             stockLabels: stockStats.map(stat => stat._id),
             stockValues: stockStats.map(stat => stat.totalQuantity)
-        };
-        
-        res.json(chartData);
-
+        });
     } catch (error) {
-        console.error("API Error fetching chart data:", error);
-        res.status(500).json({ error: 'Failed to fetch chart data' });
+        next(error);
     }
 });
 

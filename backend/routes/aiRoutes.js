@@ -1,8 +1,10 @@
 const express = require('express');
-const router = express.Router();
-const aiController = require('../controllers/aiController'); 
-const { isAuthenticated, isManagerOrAdmin } = require('../middleware/authMiddleware');
 
-router.get('/optimize-delivery-route/:id', isAuthenticated, isManagerOrAdmin, aiController.getOptimizedRoute);
+const aiController = require('../controllers/aiController');
+const { isManagerOrAdmin } = require('../middleware/authMiddleware');
+
+const router = express.Router();
+
+router.get('/optimize-delivery-route/:id', isManagerOrAdmin, aiController.getOptimizedRoute);
 
 module.exports = router;

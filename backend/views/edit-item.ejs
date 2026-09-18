@@ -1,38 +1,62 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
 
-<main>
-  <form action="/inventory/edit/<%= item._id %>" method="POST">
-    <h2>Edit Item: <%= item.name %></h2>
-    
-    <% if (error) { %><div class="feedback-box error-box"><%= error %></div><% } %>
+<main id="main-content">
+  <div class="form-card">
+    <h1 style="font-size: 1.6rem;">Edit <%= item.name %></h1>
+    <p class="form-card__intro"><span class="mono"><%= item.sku %></span></p>
 
-    <label for="stockId">Stock Name (Category)</label>
-    <select id="stockId" name="stockId" required>
-        <% allStocks.forEach(stock => { %>
-            <option value="<%= stock._id %>" <%= item.stockId.equals(stock._id) ? 'selected' : '' %>>
-                <%= stock.name %>
+    <%- include('partials/_form-errors', { errors }) %>
+
+    <form action="/inventory/edit/<%= item._id %>" method="POST" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+      <div class="field">
+        <label for="stockId">Category</label>
+        <select id="stockId" name="stockId" required>
+          <% allStocks.forEach(stock => { %>
+            <option value="<%= stock._id %>" <%= String(item.stockId) === String(stock._id) ? 'selected' : '' %>>
+              <%= stock.name %>
             </option>
-        <% }) %>
-    </select>
+          <% }) %>
+        </select>
+      </div>
 
-    <label for="sku">SKU</label>
-    <input type="text" id="sku" name="sku" value="<%= item.sku %>" required />
+      <div class="field">
+        <label for="sku">SKU</label>
+        <input type="text" id="sku" name="sku" value="<%= item.sku %>" required />
+      </div>
 
-    <label for="price">Price (per unit)</label>
-    <input type="number" id="price" name="price" value="<%= item.price.toFixed(2) %>" min="0" step="0.01" required />
+      <div class="field">
+        <label for="price">Unit price</label>
+        <input type="number" id="price" name="price" value="<%= item.price.toFixed(2) %>"
+               min="0" step="0.01" required />
+      </div>
 
-    <label for="totalStock">Total Stock (Cumulative)</label>
-    <input type="number" id="totalStock" name="totalStock" value="<%= item.totalStock %>" min="0" required />
+      <div class="field">
+        <label for="totalStock">Total stock <span class="text-muted">(cumulative)</span></label>
+        <input type="number" id="totalStock" name="totalStock" value="<%= item.totalStock %>"
+               min="0" step="1" required />
+      </div>
 
-    <label for="availableStock">Available Stock (On Hand)</label>
-    <input type="number" id="availableStock" name="availableStock" value="<%= item.availableStock %>" min="0" required />
+      <div class="field">
+        <label for="availableStock">Available stock <span class="text-muted">(on hand)</span></label>
+        <input type="number" id="availableStock" name="availableStock" value="<%= item.availableStock %>"
+               min="0" step="1" required />
+        <p class="field__hint">Cannot be higher than total stock.</p>
+      </div>
 
-    <label for="location">Warehouse Location</label>
-    <input type="text" id="location" name="location" value="<%= item.location || '' %>" />
+      <div class="field">
+        <label for="location">Warehouse location</label>
+        <input type="text" id="location" name="location" value="<%= item.location || '' %>" />
+      </div>
 
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-  </form>
+      <div class="btn-group" style="width: 100%;">
+        <button type="submit" class="btn btn-primary" style="flex: 1;">Save changes</button>
+        <a href="/inventory" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
 </main>
 
 <%- include('partials/footer') %>

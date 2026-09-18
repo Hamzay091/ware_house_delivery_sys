@@ -1,91 +1,169 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
-<main>
-  <h2>Warehouse Inventory</h2>
-  <p style="text-align:center;">Search, manage, and track all unique items in the warehouse with AI-powered forecasting.</p>
+<%
+  const sortIcon = (field) => {
+    if (sort.field !== field) return 'fa-sort';
+    return sort.dir === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+  };
+%>
 
-  <div class="actions-container" style="justify-content: space-between;">
-    <form action="/inventory" method="GET" style="display: flex; flex-grow: 1; margin: 0; padding: 0; box-shadow: none; background: none; border: none; max-width: 500px;">
-      <input type="text" name="search" placeholder="Search by Stock Name or SKU..." value="<%= searchQuery %>" style="flex-grow: 1; margin: 0; border-radius: var(--border-radius) 0 0 var(--border-radius);"/>
-      <button type="submit" class="btn btn-primary" style="margin: 0; border-radius: 0 var(--border-radius) var(--border-radius) 0; box-shadow: none;">Search</button>
+<main id="main-content">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1 style="font-size: 1.75rem;">Inventory</h1>
+      <p>Every unique item in the warehouse, with AI burn-rate forecasting.</p>
+    </div>
+    <div class="page-head__actions">
+      <a class="btn btn-secondary" href="/inventory/export.csv?<%= pagination.baseQuery %>">
+        <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Export CSV
+      </a>
+      <a class="btn btn-primary" href="/inventory/add">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i> Add / restock
+      </a>
+    </div>
+  </div>
+
+  <% if (counts.out > 0 || counts.low > 0) { %>
+    <div class="alert alert--warning">
+      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+      <div>
+        <p>
+          <strong><%= counts.out %></strong> item<%= counts.out === 1 ? ' is' : 's are' %> out of stock and
+          <strong><%= counts.low %></strong> <%= counts.low === 1 ? 'is' : 'are' %> below the
+          threshold of <%= threshold %> units.
+          <a href="/inventory?status=low">Review low stock</a>
+        </p>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="toolbar">
+    <form class="filters" action="/inventory" method="GET" role="search">
+      <div class="search-field">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <label class="sr-only" for="search">Search inventory</label>
+        <input type="search" id="search" name="search" data-autosubmit
+               value="<%= filters.search %>" placeholder="Search name, SKU or location..." />
+      </div>
+
+      <label class="sr-only" for="stockId">Filter by category</label>
+      <select id="stockId" name="stockId" data-autosubmit>
+        <option value="">All categories</option>
+        <% stocks.forEach(stock => { %>
+          <option value="<%= stock._id %>" <%= filters.stockId === String(stock._id) ? 'selected' : '' %>>
+            <%= stock.name %>
+          </option>
+        <% }) %>
+      </select>
+
+      <label class="sr-only" for="status">Filter by stock level</label>
+      <select id="status" name="status" data-autosubmit>
+        <option value="">Any stock level</option>
+        <option value="ok" <%= filters.status === 'ok' ? 'selected' : '' %>>Healthy</option>
+        <option value="low" <%= filters.status === 'low' ? 'selected' : '' %>>Low</option>
+        <option value="out" <%= filters.status === 'out' ? 'selected' : '' %>>Out of stock</option>
+      </select>
+
+      <noscript><button class="btn btn-secondary" type="submit">Filter</button></noscript>
     </form>
-    <a href="/inventory/add" class="btn btn-primary">+ Add/Restock Item</a>
   </div>
 
   <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Stock Name</th>
-          <th>SKU</th>
-          <th>Total Stock</th>
-          <th>Available Stock</th>
-          <th>Price</th>
-        
-          <th title="Predicted sales per day based on the last 30 days of delivery data.">
-            AI: Daily Burn <span style="color: var(--color-info);">ⓘ</span>
-          </th>
-          <th title="Estimated days until this item runs out of stock based on the daily burn rate.">
-            AI: Stock Left <span style="color: var(--color-info);">ⓘ</span>
-          </th>
-          <th>Location</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (items.length > 0) { %>
-          <% items.forEach(item => { %>
-            <% 
-              
-              let rowClass = '';
-              if (item.forecast && typeof item.forecast.daysOfStockLeft === 'number' && item.forecast.daysOfStockLeft <= 7) {
-                rowClass = 'critical-stock'; 
-              } else if (item.availableStock < 10 && item.availableStock > 0) {
-                rowClass = 'low-stock'; 
-              }
-            %>
-            <tr class="<%= rowClass %>">
-              <td><%= item.name %></td>
-              <td><%= item.sku %></td>
-              <td><%= item.totalStock || 0 %></td>
-              <td><%= item.availableStock || 0 %></td>
-              <td>$<%= (item.price || 0).toFixed(2) %></td>
-              
-              
-              <td>
-                <% if (item.forecast && typeof item.forecast.dailyBurnRate === 'number') { %>
-                  <%= item.forecast.dailyBurnRate %>/day
-                <% } else { %>
-                  N/A
-                <% } %>
-              </td>
-
-              
-              <td>
-                <% if (item.forecast && typeof item.forecast.daysOfStockLeft === 'number') { %>
-                  <% if (item.forecast.daysOfStockLeft > 365) { %>
-                    ∞ <!-- Infinity symbol for items with no sales -->
-                  <% } else { %>
-                    <%= item.forecast.daysOfStockLeft %> days
-                  <% } %>
-                <% } else { %>
-                  N/A
-                <% } %>
-              </td>
-              
-              <td><%= item.location || 'N/A' %></td>
-              <td>
-                <a href="/inventory/edit/<%= item._id %>" class="action-link">Edit</a>
-                <a href="/inventory/delete/<%= item._id %>" class="action-link delete-link" onclick="return confirm('Are you sure? This action cannot be undone.');">Delete</a>
+    <div class="table-scroll">
+      <table class="responsive">
+        <thead>
+          <tr>
+            <th scope="col"><a href="<%= sortHref('name') %>">Item <i class="fa-solid <%= sortIcon('name') %> sort-ind" aria-hidden="true"></i></a></th>
+            <th scope="col"><a href="<%= sortHref('sku') %>">SKU <i class="fa-solid <%= sortIcon('sku') %> sort-ind" aria-hidden="true"></i></a></th>
+            <th scope="col"><a href="<%= sortHref('totalStock') %>">Total <i class="fa-solid <%= sortIcon('totalStock') %> sort-ind" aria-hidden="true"></i></a></th>
+            <th scope="col"><a href="<%= sortHref('availableStock') %>">Available <i class="fa-solid <%= sortIcon('availableStock') %> sort-ind" aria-hidden="true"></i></a></th>
+            <th scope="col"><a href="<%= sortHref('price') %>">Price <i class="fa-solid <%= sortIcon('price') %> sort-ind" aria-hidden="true"></i></a></th>
+            <th scope="col" title="Average units sold per day over the last 30 days of delivered orders.">
+              Burn rate <i class="fa-solid fa-circle-info sort-ind" aria-hidden="true"></i>
+            </th>
+            <th scope="col" title="Estimated days until this item runs out at the current burn rate.">
+              <a href="<%= sortHref('forecast.daysOfStockLeft') %>">Days left <i class="fa-solid <%= sortIcon('forecast.daysOfStockLeft') %> sort-ind" aria-hidden="true"></i></a>
+            </th>
+            <th scope="col">Location</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (items.length === 0) { %>
+            <tr>
+              <td colspan="9">
+                <div class="empty">
+                  <div class="empty__icon"><i class="fa-solid fa-boxes-packing" aria-hidden="true"></i></div>
+                  <div class="empty__title">No items found</div>
+                  <p>
+                    <% if (filters.search || filters.stockId || filters.status) { %>
+                      Nothing matches these filters.
+                    <% } else { %>
+                      Your warehouse catalogue is empty.
+                    <% } %>
+                  </p>
+                  <a class="btn btn-primary" href="/inventory/add">Add the first item</a>
+                </div>
               </td>
             </tr>
-          <% }) %>
-        <% } else { %>
-          
-          <tr><td colspan="9" style="text-align: center;">No items found.</td></tr>
-        <% } %>
-      </tbody>
-    </table>
+          <% } else { %>
+            <% items.forEach(item => {
+                 const daysLeft = item.forecast && typeof item.forecast.daysOfStockLeft === 'number'
+                   ? item.forecast.daysOfStockLeft : null;
+                 let rowClass = '';
+                 if (item.availableStock <= 0) rowClass = 'row-danger';
+                 else if (daysLeft !== null && Number.isFinite(daysLeft) && daysLeft <= 7) rowClass = 'row-danger';
+                 else if (item.availableStock < threshold) rowClass = 'row-warn';
+            %>
+              <tr class="<%= rowClass %>">
+                <td data-label="Item"><span class="cell-title"><%= item.name %></span></td>
+                <td data-label="SKU"><span class="mono cell-sub"><%= item.sku %></span></td>
+                <td data-label="Total" class="num"><%= item.totalStock || 0 %></td>
+                <td data-label="Available" class="num">
+                  <strong><%= item.availableStock || 0 %></strong>
+                  <% if (item.availableStock <= 0) { %>
+                    <span class="pill failed" style="margin-left: 6px;">Out</span>
+                  <% } %>
+                </td>
+                <td data-label="Price" class="num">$<%= (item.price || 0).toFixed(2) %></td>
+                <td data-label="Burn rate" class="num">
+                  <% if (item.forecast && typeof item.forecast.dailyBurnRate === 'number') { %>
+                    <%= item.forecast.dailyBurnRate %>/day
+                  <% } else { %>
+                    <span class="text-muted">—</span>
+                  <% } %>
+                </td>
+                <td data-label="Days left" class="num">
+                  <% if (daysLeft === null) { %>
+                    <span class="text-muted">—</span>
+                  <% } else if (!Number.isFinite(daysLeft) || daysLeft > 365) { %>
+                    <span class="text-muted" title="No recent sales">&infin;</span>
+                  <% } else { %>
+                    <%= daysLeft %> days
+                  <% } %>
+                </td>
+                <td data-label="Location"><%= item.location || '—' %></td>
+                <td data-label="Actions" class="actions">
+                  <div class="btn-group">
+                    <a href="/inventory/edit/<%= item._id %>" class="btn btn-secondary btn-sm">Edit</a>
+                    <form class="inline-form" action="/inventory/delete/<%= item._id %>" method="POST"
+                          data-confirm="Delete &quot;<%= item.name %> (<%= item.sku %>)&quot;? This cannot be undone.">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <button type="submit" class="btn btn-ghost btn-sm text-danger" aria-label="Delete <%= item.name %>">
+                        <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
+
+  <%- include('partials/_pagination', { pagination }) %>
 </main>
+
 <%- include('partials/footer') %>

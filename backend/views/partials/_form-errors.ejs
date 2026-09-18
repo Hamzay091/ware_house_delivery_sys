@@ -1,0 +1,15 @@
+<% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+  <div class="alert alert--error" role="alert">
+    <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+    <div>
+      <% if (errors.length === 1) { %>
+        <p><%= errors[0].msg %></p>
+      <% } else { %>
+        <p>Please fix the following:</p>
+        <ul>
+          <% errors.forEach(error => { %><li><%= error.msg %></li><% }) %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+<% } %>

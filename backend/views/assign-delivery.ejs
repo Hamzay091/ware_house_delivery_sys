@@ -1,148 +1,212 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
 
+<div id="item-data-provider" data-items='<%- itemsJSON %>' hidden></div>
 
-<div id="item-data-provider" data-items='<%- itemsJSON %>' style="display: none;"></div>
+<main id="main-content">
+  <div class="form-card form-card--wide">
+    <h1 style="font-size: 1.6rem;">Assign a delivery</h1>
+    <p class="form-card__intro">
+      Stock is reserved the moment the order is created.
+    </p>
 
-<main>
-  <form id="delivery-form" action="/deliveries/assign" method="POST">
-    <h2>Assign New Delivery Order</h2>
-    
-    <% if (error) { %>
-      <div class="feedback-box error-box"><%= error %></div>
-    <% } %>
-    
+    <%- include('partials/_form-errors', { errors }) %>
+
     <% if (items.length === 0) { %>
-      <div class="feedback-box warning-box">
-        <p style="margin: 0;"><strong>Warning:</strong> There are no items currently in stock. <br>Please <a href="/inventory/add" style="font-weight: bold;">add an item to the inventory</a>.</p>
-      </div>
-    <% } else { %>
-      <label for="customerAddress">Customer Address</label>
-      <textarea name="customerAddress" id="customerAddress" rows="3" placeholder="e.g., 123 Main St, Anytown, USA" required></textarea>
-      
-      <label for="assignedTo">Assign To Staff</label>
-      <select name="assignedTo" id="assignedTo" required>
-        <option value="">-- Select Staff --</option>
-        <% staff.forEach(person => { %>
-          <% const isRecommended = person._id.toString() === recommendedStaffId; %>
-          <option value="<%= person.name %>" <%= isRecommended ? 'selected' : '' %>>
-            <%= person.name %> (Current Deliveries: <%= person.workload %>) <%= isRecommended ? '✨ Recommended' : '' %>
-          </option>
-        <% }) %>
-      </select>
-      
-      <hr style="margin: 30px 0; border: none; border-top: 1px solid var(--color-border);">
-      
-      <h3>Items to Include</h3>
-      <div id="items-container">
-       
-        <div class="item-row">
-          <select name="items[0][itemId]" class="item-select" required>
-            <option value="">-- Select an Item --</option>
-            <% items.forEach(item => { %>
-              <option value="<%= item._id %>"><%= item.name %> (<%= item.sku %>)</option>
-            <% }) %>
-          </select>
-          <input type="number" name="items[0][quantity]" class="quantity-input" placeholder="Qty" min="1" required />
-          <span class="stock-info"></span> 
+      <div class="alert alert--warning">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <div>
+          <p>
+            Nothing is currently in stock.
+            <a href="/inventory/add">Add an item to the inventory</a> first.
+          </p>
         </div>
       </div>
-      
-      <button type="button" id="add-item-btn" class="btn btn-success">+ Add Another Item</button>
-      
-      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--color-border);">
-      
-      <button type="submit" id="submit-btn" class="btn btn-primary">Create Delivery Order</button>
+      <a class="btn btn-secondary btn-block" href="/manager-dashboard">Back to dispatch</a>
+    <% } else if (staff.length === 0) { %>
+      <div class="alert alert--warning">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <div><p>There are no delivery staff accounts yet, so there is nobody to assign this to.</p></div>
+      </div>
+      <a class="btn btn-secondary btn-block" href="/manager-dashboard">Back to dispatch</a>
+    <% } else { %>
+      <form id="delivery-form" action="/deliveries/assign" method="POST" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+        <div class="field">
+          <label for="customerAddress">Customer address</label>
+          <textarea name="customerAddress" id="customerAddress" rows="3"
+                    placeholder="e.g. 123 Main St, Anytown" required></textarea>
+        </div>
+
+        <div class="field">
+          <label for="assignedTo">Assign to</label>
+          <select name="assignedTo" id="assignedTo" required>
+            <option value="">Select a staff member</option>
+            <% staff.forEach(person => {
+                 const isRecommended = String(person._id) === recommendedStaffId; %>
+              <option value="<%= person._id %>" <%= isRecommended ? 'selected' : '' %>>
+                <%= person.name %> — <%= person.workload %> active<%= isRecommended ? ' · recommended' : '' %>
+              </option>
+            <% }) %>
+          </select>
+          <p class="field__hint">
+            <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+            Whoever has the lightest active workload is pre-selected.
+          </p>
+        </div>
+
+        <hr />
+
+        <h3 style="font-size: 1.05rem; margin-bottom: var(--sp-4);">Items to include</h3>
+
+        <div id="items-container">
+          <div class="item-row">
+            <select name="items[0][itemId]" class="item-select" required aria-label="Item">
+              <option value="">Select an item</option>
+              <% items.forEach(item => { %>
+                <option value="<%= item._id %>"><%= item.name %> (<%= item.sku %>)</option>
+              <% }) %>
+            </select>
+            <input type="number" name="items[0][quantity]" class="quantity-input"
+                   placeholder="Qty" min="1" step="1" required aria-label="Quantity" />
+            <span class="stock-info" aria-live="polite"></span>
+          </div>
+        </div>
+
+        <button type="button" id="add-item-btn" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-plus" aria-hidden="true"></i> Add another item
+        </button>
+
+        <hr />
+
+        <div class="btn-group" style="width: 100%;">
+          <button type="submit" id="submit-btn" class="btn btn-primary" style="flex: 1;">
+            Create delivery order
+          </button>
+          <a href="/manager-dashboard" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
     <% } %>
-  </form>
+  </div>
 </main>
 
-
-<script>
+<script nonce="<%= cspNonce %>">
 document.addEventListener('DOMContentLoaded', () => {
-    const dataProvider = document.getElementById('item-data-provider');
-    if (!dataProvider) return;
+  const provider = document.getElementById('item-data-provider');
+  const container = document.getElementById('items-container');
+  if (!provider || !container) return;
 
-   
-    const itemsData = JSON.parse(dataProvider.dataset.items);
-    const itemsMap = new Map(itemsData.map(item => [item._id, item]));
+  let itemsData = [];
+  try {
+    itemsData = JSON.parse(provider.dataset.items);
+  } catch (e) {
+    console.error('Could not parse item data:', e);
+    return;
+  }
 
-    const form = document.getElementById('delivery-form');
-    const itemsContainer = document.getElementById('items-container');
-    const submitBtn = document.getElementById('submit-btn');
-    const addItemBtn = document.getElementById('add-item-btn');
-    let itemIndex = 1;
+  const itemsMap = new Map(itemsData.map(item => [item._id, item]));
+  const submitBtn = document.getElementById('submit-btn');
+  const addItemBtn = document.getElementById('add-item-btn');
+  let itemIndex = 1;
 
-    
-    const checkStock = (row) => {
-        const itemSelect = row.querySelector('.item-select');
-        const quantityInput = row.querySelector('.quantity-input');
-        const stockInfo = row.querySelector('.stock-info');
-        
-        const selectedItem = itemsMap.get(itemSelect.value);
-        const requestedQty = Number(quantityInput.value);
+  // Warn as soon as a line exceeds what is on the shelf. The server checks
+  // this again atomically — this is only to save a round trip.
+  const checkRow = (row) => {
+    const select = row.querySelector('.item-select');
+    const quantity = row.querySelector('.quantity-input');
+    const info = row.querySelector('.stock-info');
+    const item = itemsMap.get(select.value);
 
-        if (selectedItem) {
-            stockInfo.textContent = `(Available: ${selectedItem.availableStock})`;
-            if (requestedQty > selectedItem.availableStock) {
-                stockInfo.style.color = 'var(--color-danger)';
-                quantityInput.style.borderColor = 'var(--color-danger)';
-                return false; 
-            } else {
-                stockInfo.style.color = 'var(--color-success)';
-                quantityInput.style.borderColor = 'var(--color-border)';
-            }
-        } else {
-            stockInfo.textContent = '';
-        }
-        return true; 
-    };
+    info.classList.remove('is-over', 'is-ok');
 
-    
-    const validateAllRows = () => {
-        let allValid = true;
-        const rows = itemsContainer.querySelectorAll('.item-row');
-        rows.forEach(row => {
-            if (!checkStock(row)) {
-                allValid = false;
-            }
-        });
-        submitBtn.disabled = !allValid;
-        submitBtn.style.opacity = allValid ? '1' : '0.6';
-    };
-
-    
-    itemsContainer.addEventListener('change', validateAllRows);
-    itemsContainer.addEventListener('keyup', validateAllRows);
-    itemsContainer.addEventListener('paste', validateAllRows);
-
-    
-    if (addItemBtn) {
-        const templateRow = itemsContainer.querySelector('.item-row').cloneNode(true);
-        
-        templateRow.querySelector('select').value = '';
-        templateRow.querySelector('input').value = '';
-
-        addItemBtn.addEventListener('click', () => {
-            const newRow = templateRow.cloneNode(true);
-            newRow.querySelector('select').name = `items[${itemIndex}][itemId]`;
-            newRow.querySelector('input').name = `items[${itemIndex}][quantity]`;
-            itemsContainer.appendChild(newRow);
-            itemIndex++;
-            validateAllRows();
-        });
+    if (!item) {
+      info.textContent = '';
+      quantity.style.borderColor = '';
+      return true;
     }
 
-  
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .item-row { display: grid; grid-template-columns: 3fr 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
-        .item-row input, .item-row select { margin-bottom: 0 !important; }
-        .stock-info { font-size: 0.8rem; font-weight: 500; white-space: nowrap; }
-    `;
-    document.head.appendChild(style);
+    const requested = Number(quantity.value);
+    info.textContent = `${item.availableStock} available`;
 
-    validateAllRows();
+    if (requested > item.availableStock) {
+      info.classList.add('is-over');
+      quantity.style.borderColor = 'var(--danger)';
+      return false;
+    }
+
+    info.classList.add('is-ok');
+    quantity.style.borderColor = '';
+    return true;
+  };
+
+  // The same item can appear on more than one line, so totals are summed
+  // per item before being compared against stock.
+  const validate = () => {
+    const rows = Array.from(container.querySelectorAll('.item-row'));
+    const totals = new Map();
+
+    rows.forEach(row => {
+      const id = row.querySelector('.item-select').value;
+      const qty = Number(row.querySelector('.quantity-input').value) || 0;
+      if (id) totals.set(id, (totals.get(id) || 0) + qty);
+    });
+
+    let valid = rows.every(checkRow);
+
+    totals.forEach((total, id) => {
+      const item = itemsMap.get(id);
+      if (item && total > item.availableStock) {
+        valid = false;
+        rows.forEach(row => {
+          if (row.querySelector('.item-select').value !== id) return;
+          const info = row.querySelector('.stock-info');
+          info.classList.remove('is-ok');
+          info.classList.add('is-over');
+          info.textContent = `${total} requested, ${item.availableStock} available`;
+        });
+      }
+    });
+
+    submitBtn.disabled = !valid;
+  };
+
+  container.addEventListener('change', validate);
+  container.addEventListener('input', validate);
+
+  container.addEventListener('click', (e) => {
+    const remove = e.target.closest('.item-row__remove');
+    if (!remove) return;
+    if (container.querySelectorAll('.item-row').length <= 1) return;
+    remove.closest('.item-row').remove();
+    validate();
+  });
+
+  if (addItemBtn) {
+    const template = container.querySelector('.item-row').cloneNode(true);
+    template.querySelector('select').value = '';
+    template.querySelector('input').value = '';
+    template.querySelector('.stock-info').textContent = '';
+
+    addItemBtn.addEventListener('click', () => {
+      const row = template.cloneNode(true);
+      row.querySelector('select').name = `items[${itemIndex}][itemId]`;
+      row.querySelector('input').name = `items[${itemIndex}][quantity]`;
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'item-row__remove';
+      remove.setAttribute('aria-label', 'Remove this item');
+      remove.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+      row.appendChild(remove);
+
+      container.appendChild(row);
+      itemIndex++;
+      validate();
+    });
+  }
+
+  validate();
 });
 </script>
 

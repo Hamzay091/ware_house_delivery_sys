@@ -1,52 +1,54 @@
 const express = require('express');
-const router = express.Router();
-const authController = require('../controllers/authController');
 const { body } = require('express-validator');
 const passport = require('passport');
 
+const authController = require('../controllers/authController');
+const User = require('../models/user');
+
+const router = express.Router();
+
 const ensureAuthProfile = (req, res, next) => {
-    if (req.session.oauthProfile) {
-        return next();
-    }
+    if (req.session.oauthProfile) return next();
     res.redirect('/login');
 };
 
+const registerValidators = [
+    body('name').trim().notEmpty().withMessage('Your name is required.').escape(),
+    body('email').isEmail().withMessage('Enter a valid email address.').normalizeEmail(),
+    body('password')
+        .isLength({ min: 8 }).withMessage('Your password must be at least 8 characters long.'),
+    body('role').isIn(User.ROLES).withMessage('Choose a valid role.'),
+    body('phone').optional({ checkFalsy: true }).trim().escape(),
+    body('socialLink')
+        .optional({ checkFalsy: true })
+        .isURL({ require_protocol: true })
+        .withMessage('Your social link must be a full URL, including https://')
+];
+
 router.get('/register', authController.renderRegisterPage);
-router.post('/register', [
-    body('name').trim().notEmpty().withMessage('Name is required.').escape(),
-    body('email').isEmail().withMessage('Please enter a valid email address.').normalizeEmail(),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long.')
-], authController.handleRegister);
+router.post('/register', registerValidators, authController.handleRegister);
+
 router.get('/login', authController.renderLoginPage);
 router.post('/login', [
-    body('email').isEmail().withMessage('Please enter a valid email address.').normalizeEmail()
+    body('email').isEmail().withMessage('Enter a valid email address.').normalizeEmail(),
+    body('password').notEmpty().withMessage('Enter your password.')
 ], authController.handleLogin);
-router.get('/logout', authController.handleLogout);
 
-router.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' }));
+// Logging out changes state, so it is a POST guarded by the CSRF token.
+router.post('/logout', authController.handleLogout);
 
-router.get('/auth/google/callback', (req, res, next) => {
-    passport.authenticate('google', (err, user, info) => {
-        if (err) { return next(err); }
-        if (!user) {
-            req.session.oauthProfile = info.profile;
-            return res.redirect('/choose-role');
-        }
-        if (user.status !== 'approved') {
-            return res.render('login', { error: 'Your account is still pending approval.', errors: [] });
-        }
-        req.login(user, (err) => {
-            if (err) { return next(err); }
-            const redirectUrl = {
-                Admin: '/admin-dashboard',
-                Manager: '/manager-dashboard',
-                DeliveryStaff: '/delivery-staff-dashboard'
-            }[user.role] || '/login';
-            return res.redirect(redirectUrl);
-        });
+router.get('/auth/google', (req, res, next) => {
+    if (!req.app.locals.googleAuthEnabled) {
+        req.flash('error', 'Google sign-in is not configured on this server.');
+        return res.redirect('/login');
+    }
+    return passport.authenticate('google', {
+        scope: ['profile', 'email'],
+        prompt: 'select_account'
     })(req, res, next);
 });
+
+router.get('/auth/google/callback', authController.handleGoogleCallback);
 
 router.get('/choose-role', ensureAuthProfile, authController.renderChooseRolePage);
 router.post('/choose-role', ensureAuthProfile, authController.handleChooseRole);

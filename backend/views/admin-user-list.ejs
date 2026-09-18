@@ -1,30 +1,86 @@
 <%- include('partials/header') %>
 <%- include('partials/navbar') %>
-<main>
-  <h2><%= title %></h2>
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% users.forEach(user => { %>
-          <tr>
-            <td><%= user.name %></td>
-            <td><%= user.email %></td>
-            <td><%= user.phone || 'N/A' %></td>
-            <td>
-              <a href="/admin/user-detail/<%= user._id %>" class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;">View Details</a>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+<%
+  const initials = (name) => (name || '?').trim().split(/\s+/).slice(0, 2)
+    .map(part => part[0].toUpperCase()).join('');
+%>
+
+<main id="main-content">
+  <div class="page-head">
+    <div class="page-head__text">
+      <h1 style="font-size: 1.75rem;"><%= heading %></h1>
+      <p>Drill into any account to see its full delivery history.</p>
+    </div>
+    <div class="page-head__actions">
+      <a class="btn btn-secondary" href="/users/manage">All users</a>
+    </div>
   </div>
+
+  <div class="toolbar">
+    <form class="filters" action="<%= currentPath %>" method="GET" role="search">
+      <div class="search-field">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <label class="sr-only" for="search">Search</label>
+        <input type="search" id="search" name="search" data-autosubmit
+               value="<%= filters.search %>" placeholder="Search name or email..." />
+      </div>
+      <noscript><button class="btn btn-secondary" type="submit">Search</button></noscript>
+    </form>
+  </div>
+
+  <div class="table-container">
+    <div class="table-scroll">
+      <table class="responsive">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Active workload</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (users.length === 0) { %>
+            <tr>
+              <td colspan="5">
+                <div class="empty">
+                  <div class="empty__icon"><i class="fa-solid fa-user-slash" aria-hidden="true"></i></div>
+                  <div class="empty__title">Nobody here yet</div>
+                  <p>No accounts match this view.</p>
+                </div>
+              </td>
+            </tr>
+          <% } else { %>
+            <% users.forEach(person => { %>
+              <tr>
+                <td data-label="Name">
+                  <span style="display: inline-flex; align-items: center; gap: var(--sp-3);">
+                    <span class="avatar" aria-hidden="true"><%= initials(person.name) %></span>
+                    <span class="cell-title"><%= person.name %></span>
+                  </span>
+                </td>
+                <td data-label="Email"><a href="mailto:<%= person.email %>"><%= person.email %></a></td>
+                <td data-label="Phone"><%= person.phone || '—' %></td>
+                <td data-label="Active workload" class="num">
+                  <% if (person.workload > 0) { %>
+                    <span class="pill in-transit"><%= person.workload %> active</span>
+                  <% } else { %>
+                    <span class="text-muted">Free</span>
+                  <% } %>
+                </td>
+                <td data-label="Actions" class="actions">
+                  <a href="/admin/user-detail/<%= person._id %>" class="btn btn-secondary btn-sm">View details</a>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%- include('partials/_pagination', { pagination }) %>
 </main>
+
 <%- include('partials/footer') %>
